@@ -116,6 +116,7 @@ fn main() -> io::Result<()> {
     };
 
     text_area.set_line_number_style(Style::default().fg(Color::DarkGray));
+    text_area.set_tab_length(4);
 
     let mosaic = Mosaic::new(Mode::Normal, text_area);
 

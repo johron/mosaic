@@ -67,6 +67,32 @@ fn handle_normal_mode(mosaic: &mut Mosaic, key_event: KeyEvent) {
 fn handle_non_modifier(mosaic: &mut Mosaic, key_event: KeyEvent) {
     match key_event.code {
         KeyCode::Esc => mosaic.set_mode(Mode::Normal),
+        KeyCode::Tab => {
+            mosaic.text_area.input(Input {
+                key: Key::Tab,
+                ctrl: false,
+                alt: false,
+                shift: false,
+            });
+        },
+        KeyCode::BackTab => {
+            let row = mosaic.text_area.cursor().0;
+            let current_line = mosaic.text_area.lines()[row].as_str();
+            let leading_spaces = current_line.chars().take_while(|c| *c == ' ').count();
+            let to_remove = std::cmp::min(4, leading_spaces);
+
+            for _ in 0..to_remove {
+                let (r, col) = mosaic.text_area.cursor();
+                if col == 0 { break; }
+                let prev_char = mosaic.text_area.lines()[r].chars().nth(col.saturating_sub(1)).unwrap_or('\0');
+                if prev_char == ' ' {
+                    mosaic.text_area.delete_char();
+                } else {
+                    break;
+                }
+            }
+        },
+
         KeyCode::Char(c) => {
             mosaic.text_area.input(Input {
                 key: Key::Char(c),
@@ -80,7 +106,23 @@ fn handle_non_modifier(mosaic: &mut Mosaic, key_event: KeyEvent) {
         KeyCode::Down => mosaic.text_area.move_cursor(CursorMove::Down),
         KeyCode::Right => mosaic.text_area.move_cursor(CursorMove::Forward),
 
-        KeyCode::Enter => mosaic.text_area.insert_newline(),
+        KeyCode::Enter => {
+            mosaic.text_area.insert_newline();
+
+            let row = mosaic.text_area.cursor().0.saturating_sub(1);
+            let current_line = mosaic.text_area.lines()[row].as_str();
+
+            let indent: String = current_line.chars().take_while(|c| c.is_whitespace()).collect();
+
+            for _ in 0..indent.len() {
+                mosaic.text_area.input(Input {
+                    key: Key::Char(' '),
+                    ctrl: false,
+                    alt: false,
+                    shift: false,
+                });
+            }
+        },
 
         KeyCode::Backspace => {
             mosaic.text_area.delete_char();
@@ -98,10 +140,10 @@ fn handle_insert_mode(mosaic: &mut Mosaic, key_event: KeyEvent) {
                 mosaic.text_area.move_cursor(CursorMove::WordBack)
             },
             KeyEvent { code: KeyCode::Up, modifiers: KeyModifiers::CONTROL, .. } => {
-                mosaic.text_area.move_cursor(CursorMove::Top)
+                mosaic.text_area.move_cursor(CursorMove::Up)
             },
             KeyEvent { code: KeyCode::Down, modifiers: KeyModifiers::CONTROL, .. } => {
-                mosaic.text_area.move_cursor(CursorMove::Bottom)
+                mosaic.text_area.move_cursor(CursorMove::Down)
             },
             KeyEvent { code: KeyCode::Right, modifiers: KeyModifiers::CONTROL, .. } => {
                 mosaic.text_area.move_cursor(CursorMove::WordForward)
