@@ -34,7 +34,7 @@ fn handle_insert_mode(kilo: &mut Kilo, key: KeyEvent) {
         KeyCode::Esc => kilo.mode = Mode::Normal,
         KeyCode::Char(c) => {
             // TODO: add char to buffer
-            println!("Inserting: {}", c);
+            //println!("Inserting: {}", c);
         }
         KeyCode::Backspace => {
             // TODO: delete char

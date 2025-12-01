@@ -2,6 +2,7 @@ use ratatui::{
     prelude::*,
     widgets::{Block, Borders, Paragraph},
 };
+use tui_textarea::TextArea;
 use crate::{Kilo, Mode};
 
 pub fn draw(frame: &mut Frame, kilo: &Kilo) {
@@ -12,9 +13,9 @@ pub fn draw(frame: &mut Frame, kilo: &Kilo) {
     };
 
     let status = Paragraph::new(mode_label)
-        .block(Block::default().borders(Borders::ALL))
+        .block(Block::default().borders(Borders::TOP))
         .alignment(Alignment::Center);
 
-    let area = frame.size();
-    frame.render_widget(status, area);
+    frame.render_widget(status.clone(), frame.area());
+    frame.render_widget(TextArea::new(vec!["test".to_string()]).widget(), frame.area());
 }
