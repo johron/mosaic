@@ -41,12 +41,51 @@ impl<'a> Editor<'a> {
         }
     }
 
+    fn line_visible_len(&self, line: usize) -> usize {
+        let len = self.rope.line(line).len_chars();
+        if len == 0 {
+            return 0;
+        }
+        let start = self.rope.line_to_char(line);
+        // safe because len > 0
+        let last = self.rope.char(start + len - 1);
+        if last == '\n' {
+            len - 1
+        } else {
+            len
+        }
+    }
+
+    fn cursor_abs_pos(&self, cur: &Cursor) -> usize {
+        self.rope.line_to_char(cur.line) + cur.col
+    }
+
+    fn char_under_cursor(&self, cur: &Cursor) -> Option<char> {
+        let vis_len = self.line_visible_len(cur.line);
+        if cur.col < vis_len {
+            let pos = self.cursor_abs_pos(cur);
+            Some(self.rope.char(pos))
+        } else {
+            None
+        }
+    }
+
     fn clamp_cursor(rope: &Rope, mut c: Cursor) -> Cursor {
         let line_count = rope.len_lines();
         if c.line >= line_count.saturating_sub(1) + 1 {
             c.line = line_count.saturating_sub(1);
         }
-        let line_len = rope.line(c.line).len_chars();
+        let line_len = {
+            // compute visible len using rope methods
+            let len = rope.line(c.line).len_chars();
+            if len == 0 {
+                0
+            } else {
+                let start = rope.line_to_char(c.line);
+                let last = rope.char(start + len - 1);
+                if last == '\n' { len - 1 } else { len }
+            }
+        };
         if c.col > line_len {
             c.col = line_len;
         }
@@ -109,22 +148,41 @@ impl<'a> Editor<'a> {
             }
         }
 
-        // move cursors back one char (if possible)
-        for cur in &mut self.cursors {
-            if cur.col > 0 {
-                cur.col -= 1;
-            } else if cur.line > 0 {
-                // join lines: put cursor at end of previous line
-                cur.line -= 1;
-                cur.col = self.rope.line(cur.line).len_chars();
-            }
-            *cur = Self::clamp_cursor(&self.rope, cur.clone());
-        }
-    }
+        let mut idx = 0;
+        while idx < self.cursors.len() {
+            // read current cursor state with a short immutable borrow
+            let (col, line) = {
+                let c = &self.cursors[idx];
+                (c.col, c.line)
+            };
 
-    pub fn tab(&mut self) {
-        for _ in 0..4 {
-            self.input(' ');
+            if col > 0 {
+                let cur = &mut self.cursors[idx];
+                cur.col -= 1;
+                *cur = Self::clamp_cursor(&self.rope, cur.clone());
+            } else if line > 0 {
+                // compute visible length of previous line using only `self.rope`
+                let prev_line = line - 1;
+                let new_col = {
+                    let len = self.rope.line(prev_line).len_chars();
+                    if len == 0 {
+                        0
+                    } else {
+                        let start = self.rope.line_to_char(prev_line);
+                        let last = self.rope.char(start + len - 1);
+                        if last == '\n' { len - 1 } else { len }
+                    }
+                };
+                let cur = &mut self.cursors[idx];
+                cur.line = prev_line;
+                cur.col = new_col;
+                *cur = Self::clamp_cursor(&self.rope, cur.clone());
+            } else {
+                let cur = &mut self.cursors[idx];
+                *cur = Self::clamp_cursor(&self.rope, cur.clone());
+            }
+
+            idx += 1;
         }
     }
 
@@ -137,58 +195,59 @@ impl<'a> Editor<'a> {
                     self.cursors[idx].col -= 1;
                 } else if self.cursors[idx].line > 0 {
                     self.cursors[idx].line -= 1;
-                    self.cursors[idx].col = self.rope.line(self.cursors[idx].line).len_chars();
+                    self.cursors[idx].col = self.line_visible_len(self.cursors[idx].line);
                 }
+                self.cursors[idx] = Self::clamp_cursor(&self.rope, self.cursors[idx].clone());
             }
             CursorMove::Forward => {
-                let line_len = self.rope.line(self.cursors[idx].line).len_chars();
+                let line_len = self.line_visible_len(self.cursors[idx].line);
                 if self.cursors[idx].col < line_len {
                     self.cursors[idx].col += 1;
                 } else if self.cursors[idx].line + 1 < self.rope.len_lines() {
                     self.cursors[idx].line += 1;
                     self.cursors[idx].col = 0;
                 }
+                self.cursors[idx] = Self::clamp_cursor(&self.rope, self.cursors[idx].clone());
             }
             CursorMove::Up => {
                 if self.cursors[idx].line > 0 {
                     self.cursors[idx].line -= 1;
-                    let line_len = self.rope.line(self.cursors[idx].line).len_chars();
+                    let line_len = self.line_visible_len(self.cursors[idx].line);
                     self.cursors[idx].col = min(self.cursors[idx].col, line_len);
                 }
+                self.cursors[idx] = Self::clamp_cursor(&self.rope, self.cursors[idx].clone());
             }
             CursorMove::Down => {
                 if self.cursors[idx].line + 1 < self.rope.len_lines() {
                     self.cursors[idx].line += 1;
-                    let line_len = self.rope.line(self.cursors[idx].line).len_chars();
+                    let line_len = self.line_visible_len(self.cursors[idx].line);
                     self.cursors[idx].col = min(self.cursors[idx].col, line_len);
                 }
+                self.cursors[idx] = Self::clamp_cursor(&self.rope, self.cursors[idx].clone());
             }
             CursorMove::WordBack => {
-                let idx = 0;
-                let mut pos = self.rope.line_to_char(self.cursors[idx].line) + self.cursors[idx].col;
+                let mut pos = self.cursor_abs_pos(&self.cursors[idx]);
                 if pos == 0 {
                     // already at start
                 } else {
-                    // step left at least one char
                     pos -= 1;
-                    // skip whitespace going backward
                     while pos > 0 && self.rope.char(pos).is_whitespace() {
                         pos -= 1;
                     }
-                    // move to start of that word
                     while pos > 0 && !self.rope.char(pos - 1).is_whitespace() {
                         pos -= 1;
                     }
                     let line = self.rope.char_to_line(pos);
                     let col = pos - self.rope.line_to_char(line);
+                    // ensure col doesn't exceed visible len
                     self.cursors[idx].line = line;
-                    self.cursors[idx].col = col;
+                    self.cursors[idx].col = min(col, self.line_visible_len(line));
                 }
+                self.cursors[idx] = Self::clamp_cursor(&self.rope, self.cursors[idx].clone());
             }
             CursorMove::WordForward => {
-                let idx = 0;
                 let total = self.rope.len_chars();
-                let mut pos = self.rope.line_to_char(self.cursors[idx].line) + self.cursors[idx].col;
+                let mut pos = self.cursor_abs_pos(&self.cursors[idx]);
                 if pos < total {
                     if self.rope.char(pos).is_whitespace() {
                         while pos < total && self.rope.char(pos).is_whitespace() {
@@ -205,9 +264,16 @@ impl<'a> Editor<'a> {
                     let line = self.rope.char_to_line(pos);
                     let col = pos - self.rope.line_to_char(line);
                     self.cursors[idx].line = line;
-                    self.cursors[idx].col = col;
+                    self.cursors[idx].col = min(col, self.line_visible_len(line));
                 }
+                self.cursors[idx] = Self::clamp_cursor(&self.rope, self.cursors[idx].clone());
             }
+        }
+    }
+
+    pub fn tab(&mut self) {
+        for _ in 0..4 {
+            self.input(' ');
         }
     }
 
