@@ -34,7 +34,6 @@ pub fn draw(frame: &mut Frame, mosaic: &mut Mosaic) {
         }
     );
 
-
     //frame.render_widget(&mosaic.editors[mosaic.current_editor].text_area, frame.area());
     let rust_keywords = Regex::new(r"^(fn|let|mut|struct|enum|impl|for|while|loop|if|else|match|use|pub|mod|crate)\b").unwrap();
     let number_re = Regex::new(r"^\d+").unwrap();
@@ -50,6 +49,9 @@ pub fn draw(frame: &mut Frame, mosaic: &mut Mosaic) {
     let top_line = mosaic.editors[mosaic.current_editor].top_line;
     let mut lines_spans: Vec<Line> = Vec::new();
     let height = chunks[0].height as usize;
+
+    mosaic.editors[mosaic.current_editor].height = height;
+
     let max_line = std::cmp::min(
         mosaic.editors[mosaic.current_editor].rope.len_lines(),
         top_line.saturating_add(height),

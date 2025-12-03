@@ -15,6 +15,7 @@ pub(crate) struct Editor<'a> {
     pub(crate) file_path: Option<String>,
     pub(crate) block: Block<'a>,
     pub(crate) top_line: usize,
+    pub(crate) height: usize,
     show_gutter: bool,
 }
 
@@ -40,6 +41,7 @@ impl<'a> Editor<'a> {
             show_gutter: true,
             block: Block::default(),
             top_line: 0,
+            height: 0,
         }
     }
 
@@ -91,6 +93,7 @@ impl<'a> Editor<'a> {
         if c.col > line_len {
             c.col = line_len;
         }
+
         c
     }
 
@@ -126,6 +129,15 @@ impl<'a> Editor<'a> {
             }
 
             *cur = Self::clamp_cursor(&self.rope, cur.clone());
+        }
+    }
+
+    fn update_scroll(&mut self, idx: usize) {
+        // ensure first cursor is visible
+        if self.cursors[idx].line < self.top_line {
+            self.top_line = self.cursors[idx].line;
+        } else if self.cursors[idx].line >= self.top_line + self.height {
+            self.top_line = self.cursors[idx].line.saturating_sub(self.height).saturating_add(1);
         }
     }
 
@@ -184,6 +196,8 @@ impl<'a> Editor<'a> {
                 *cur = Self::clamp_cursor(&self.rope, cur.clone());
             }
 
+            self.update_scroll(idx);
+
             idx += 1;
         }
     }
@@ -218,6 +232,12 @@ impl<'a> Editor<'a> {
                     self.cursors[idx].col = min(self.cursors[idx].col, line_len);
                 }
                 self.cursors[idx] = Self::clamp_cursor(&self.rope, self.cursors[idx].clone());
+
+                if self.cursors[idx].line < self.top_line {
+                    self.top_line = self.cursors[idx].line;
+                }
+
+                self.update_scroll(idx);
             }
             CursorMove::Down => {
                 if self.cursors[idx].line + 1 < self.rope.len_lines() {
@@ -226,6 +246,12 @@ impl<'a> Editor<'a> {
                     self.cursors[idx].col = min(self.cursors[idx].col, line_len);
                 }
                 self.cursors[idx] = Self::clamp_cursor(&self.rope, self.cursors[idx].clone());
+
+                if self.cursors[idx].line >= self.top_line + self.height {
+                    self.top_line = self.cursors[idx].line.saturating_sub(self.height).saturating_add(1);
+                }
+
+                self.update_scroll(idx);
             }
             CursorMove::WordBack => {
                 let idx = 0;
@@ -280,6 +306,11 @@ impl<'a> Editor<'a> {
     pub fn scroll_up(&mut self) {
         if self.top_line > 0 {
             self.top_line -= 1;
+
+            if self.cursors[0].line > self.height + self.top_line - 1 {
+                self.cursors[0].line = self.height + self.top_line - 1;
+                self.cursors[0] = Self::clamp_cursor(&self.rope, self.cursors[0].clone());
+            }
         }
     }
 
@@ -288,7 +319,8 @@ impl<'a> Editor<'a> {
             self.top_line += 1;
 
             if self.cursors[0].line < self.top_line {
-                self.move_cursor(CursorMove::Down);
+                self.cursors[0].line = self.top_line;
+                self.cursors[0] = Self::clamp_cursor(&self.rope, self.cursors[0].clone());
             }
         }
     }
