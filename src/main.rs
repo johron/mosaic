@@ -101,31 +101,24 @@ fn main() -> io::Result<()> {
     let mut terminal = Terminal::new(backend)?;
 
     let mut file_path: Option<String> = None;
-    /*let mut text_area = if let Some(path_str) = env::args().nth(1) {
-        let path = std::path::Path::new(&path_str);
-        if path.exists() {
-            let file = fs::File::open(path)?;
-            file_path = Some(path_str);
-            io::BufReader::new(file)
-                .lines()
-                .collect::<io::Result<_>>()?
-        } else {
-            // make the file if it doesn't exist
-            fs::File::create(path)?;
-            let file = fs::File::open(path)?;
-            file_path = Some(path_str);
-            io::BufReader::new(file)
-                .lines()
-                .collect::<io::Result<_>>()?
+    let mut initial_content = String::new();
+    
+    if let Some(arg1) = env::args().nth(1) {
+        file_path = Some(arg1.clone());
+        match fs::read_to_string(&arg1) {
+            Ok(content) => {
+                initial_content = content;
+            }
+            Err(_) => {
+                initial_content = String::new();
+            }
         }
-    } else {
-        panic!("No file path provided, ill fix something later");
-    };*/
+    }
 
     //text_area.set_line_number_style(Style::default().fg(Color::DarkGray));
     //text_area.set_tab_length(4);
 
-    let mosaic = Mosaic::new(Mode::Normal, Editor::new("", None));
+    let mosaic = Mosaic::new(Mode::Normal, Editor::new(initial_content.as_str(), file_path));
 
     let res = run(&mut terminal, mosaic);
 
