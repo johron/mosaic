@@ -140,7 +140,7 @@ fn run(terminal: &mut Terminal<CrosstermBackend<StdoutLock>>, mut mosaic: Mosaic
         })?;
 
         input::handle(&mut mosaic).expect("TODO: panic message");
-        
+
         if mosaic.should_quit {
             break Ok(());
         }
