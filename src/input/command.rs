@@ -90,6 +90,72 @@ pub(crate) fn handle_command(mosaic: &mut Mosaic) -> Result<String, Error> {
             Ok(format!("Search pattern set to '{}'", search_term))
         },
         _ => {
+            if args[0].starts_with("1") {
+                let shell_command = &mosaic.command.content[1..];
+                let output = if cfg!(target_os = "windows") {
+                    std::process::Command::new("cmd")
+                        .args(&["/C", shell_command])
+                        .output()?
+                } else {
+                    std::process::Command::new("sh")
+                        .arg("-c")
+                        .arg(shell_command)
+                        .output()?
+                };
+
+                return if output.status.success() {
+                    let stdout = String::from_utf8_lossy(&output.stdout);
+                    let formatted = if stdout.contains('\n') {
+                        stdout.lines().filter(|s| !s.is_empty()).collect::<Vec<_>>().join("  ")
+                    } else {
+                        stdout.trim_end().to_string()
+                    };
+                    Ok(formatted)
+                } else {
+                    let stderr = String::from_utf8_lossy(&output.stderr);
+                    let formatted_err = if stderr.contains('\n') {
+                        stderr.lines().filter(|s| !s.is_empty()).collect::<Vec<_>>().join("  ")
+                    } else {
+                        stderr.trim_end().to_string()
+                    };
+                    Err(Error::new(std::io::ErrorKind::Other, formatted_err))
+                }
+            } else if args[0].starts_with("3") {
+                if args[0].trim_start_matches('3').is_empty() {
+                    return Err(Error::new(std::io::ErrorKind::Other, "No local command provided"));
+                }
+                
+                let local_command = &("./".to_string() + args[0].trim_start_matches("3"));
+                let output = if cfg!(target_os = "windows") {
+                    std::process::Command::new("cmd")
+                        .args(&["/C", local_command])
+                        .output()?
+                } else {
+                    std::process::Command::new("sh")
+                        .arg("-c")
+                        .arg(local_command)
+                        .output()?
+                };
+
+                return if output.status.success() {
+                    let stdout = String::from_utf8_lossy(&output.stdout);
+                    let formatted = if stdout.contains('\n') {
+                        stdout.lines().filter(|s| !s.is_empty()).collect::<Vec<_>>().join("  ")
+                    } else {
+                        stdout.trim_end().to_string()
+                    };
+                    Ok(formatted)
+                } else {
+                    let stderr = String::from_utf8_lossy(&output.stderr);
+                    let formatted_err = if stderr.contains('\n') {
+                        stderr.lines().filter(|s| !s.is_empty()).collect::<Vec<_>>().join("  ")
+                    } else {
+                        stderr.trim_end().to_string()
+                    };
+                    Err(Error::new(std::io::ErrorKind::Other, formatted_err))
+                }
+            }
+
             Ok(String::from("Error: Unknown command"))
         }
     }
