@@ -65,11 +65,11 @@ pub(crate) fn handle_command(mosaic: &mut Mosaic) -> Result<String, Error> {
         "w" => {
             let content = editor.rope.to_string();
 
-            if mosaic.editors[mosaic.current_editor].file_path.is_none() {
-                if args.len() < 2 {
-                    return Err(Error::new(std::io::ErrorKind::Other, "No file path provided"));
-                } else {
+            if mosaic.editors[mosaic.current_editor].file_path.is_none() { // TOOO: arg isnt prioritized, i need to fix, but i tried and this no
+                if args.len() >= 2 {
                     mosaic.editors[mosaic.current_editor].file_path = Some(args[1].to_string());
+                } else if mosaic.editors[mosaic.current_editor].file_path.is_none() {
+                    return Err(Error::new(std::io::ErrorKind::Other, "No file path provided"));
                 }
             }
 
@@ -90,7 +90,7 @@ pub(crate) fn handle_command(mosaic: &mut Mosaic) -> Result<String, Error> {
             Ok(format!("Search pattern set to '{}'", search_term))
         },
         _ => {
-            if args[0].starts_with("1") {
+            if args[0].starts_with("2") {
                 let shell_command = &mosaic.command.content[1..];
                 let output = if cfg!(target_os = "windows") {
                     std::process::Command::new("cmd")
