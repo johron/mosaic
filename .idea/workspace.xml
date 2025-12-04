@@ -9,7 +9,9 @@
     </cargoProject>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5e6cf5f6-79d7-4fbe-bc32-cf31cac13264" name="Changes" comment="" />
+    <list default="true" id="5e6cf5f6-79d7-4fbe-bc32-cf31cac13264" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/src/ui.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/ui.rs" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -32,12 +34,12 @@
     &quot;assignee&quot;: &quot;johron&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/johron/mosaic.git&quot;,
-    &quot;accountId&quot;: &quot;fb00e9d8-99a4-434f-9ea7-2ceb0db18abb&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/johron/mosaic",
+    "accountId": "fb00e9d8-99a4-434f-9ea7-2ceb0db18abb"
   }
-}</component>
+}]]></component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="aApZxjfQ" />
   </component>
@@ -130,6 +132,7 @@
       <workItem from="1764619060242" duration="3976000" />
       <workItem from="1764664249506" duration="1009000" />
       <workItem from="1764837330708" duration="367000" />
+      <workItem from="1764850464751" duration="685000" />
     </task>
     <servers />
   </component>

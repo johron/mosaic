@@ -62,6 +62,7 @@ pub fn draw(frame: &mut Frame, mosaic: &mut Mosaic) {
         let text_line = rope_line.to_string();
         let spans = highlight_line(&text_line, &rust_keywords, &number_re);
         let mut line_spans = vec![Span::raw(format!("{:4} ", i))]; // small gutter
+
         line_spans.extend(spans);
         lines_spans.push(Line::from(line_spans));
     }
@@ -75,6 +76,6 @@ pub fn draw(frame: &mut Frame, mosaic: &mut Mosaic) {
     for cursor in &mosaic.editors[mosaic.current_editor].cursors {
         let cursor_x = chunks[0].x + 5 + cursor.col as u16; // 5 for gutter
         let cursor_y = chunks[0].y + (cursor.line.saturating_sub(top_line)) as u16;
-        frame.set_cursor(cursor_x, cursor_y);
+        frame.set_cursor_position(Position::new(cursor_x, cursor_y));
     }
 }
