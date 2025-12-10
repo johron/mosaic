@@ -2,6 +2,8 @@ use std::cmp::min;
 use ratatui::widgets::Block;
 use ropey::Rope;
 use crate::handler::config_handler::ConfigHandler;
+use crate::handler::shortcut_handler::ShortcutHandler;
+use crate::Mosaic;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Cursor {
@@ -350,10 +352,14 @@ impl<'a> Editor<'a> {
         self.show_gutter = !self.show_gutter;
     }
 
-    pub fn register_shortcuts(&mut self, config_handler: &mut ConfigHandler) {
-        let shortcut_handler = &mut config_handler.shortcut_handler;
+    pub fn register_shortcuts(&mut self, shortcut_handler: &mut ShortcutHandler, config_handler: &ConfigHandler) {
         let editor = &config_handler.config.editor;
 
-        shortcut_handler.register_shortcut(String::from("editor.enter_normal_mode"), editor.shortcuts.enter_normal_mode.clone(), todo!());
+        shortcut_handler.register_shortcut(String::from("editor.enter_normal_mode"), editor.shortcuts.enter_normal_mode.clone(), Self::enter_normal_mode);
+    }
+
+    fn enter_normal_mode(mosaic: &mut Mosaic) -> Result<String, String> {
+        mosaic.set_mode(crate::Mode::Normal);
+        Ok(String::from("Entered Normal Mode"))
     }
 }

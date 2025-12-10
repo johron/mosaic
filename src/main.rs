@@ -15,7 +15,10 @@ use std::str::FromStr;
 use std::{env, fmt, fs, io};
 use std::time::{Duration, Instant};
 use crate::editor::Editor;
-use crate::handler::config_handler::ConfigHandler;
+use crate::handler::command_handler::CommandHandler;
+use crate::handler::config_handler;
+use crate::handler::config_handler::{Config, ConfigHandler};
+use crate::handler::shortcut_handler::{Shortcut, ShortcutHandler};
 
 #[derive(Debug, Copy, Clone)]
 enum Mode {
@@ -79,11 +82,13 @@ struct Mosaic<'a> {
     editor: Editor<'a>,
     current_editor: usize,
 
-    config_handler: &'a mut ConfigHandler
+    config_handler: ConfigHandler,
+    command_handler: CommandHandler,
+    shortcut_handler: ShortcutHandler,
 }
 
 impl<'a> Mosaic<'a> {
-    fn new(mode: Mode, config_handler: &'a mut ConfigHandler, editor: Editor<'a>) -> Self {
+    fn new(mode: Mode, editor: Editor<'a>) -> Self {
         Self {
             mode,
             should_quit: false,
@@ -91,7 +96,10 @@ impl<'a> Mosaic<'a> {
             toast: None,
             editor,
             current_editor: 0,
-            config_handler,
+
+            config_handler: ConfigHandler::new(),
+            command_handler: CommandHandler::new(),
+            shortcut_handler: ShortcutHandler::new(),
         }
     }
 
@@ -115,7 +123,9 @@ impl<'a> Mosaic<'a> {
     }
 
     fn init(&mut self) {
-        self.editor.register_shortcuts(&mut self.config_handler);
+        self.config_handler.load_config();
+
+        self.editor.register_shortcuts(&mut self.shortcut_handler, &mut self.config_handler);
     }
     
     fn reload(&mut self) {
@@ -151,12 +161,8 @@ fn main() -> io::Result<()> {
     //text_area.set_line_number_style(Style::default().fg(Color::DarkGray));
     //text_area.set_tab_length(4);
 
-    let command_handler = handler::command_handler::CommandHandler::new();
-    let shortcut_handler = handler::shortcut_handler::ShortcutHandler::new();
-    let mut config_handler = ConfigHandler::new(command_handler, shortcut_handler);
-    config_handler.load_config();
 
-    let mut mosaic = Mosaic::new(Mode::Normal, &mut config_handler, Editor::new(initial_content.as_str(), file_path));
+    let mut mosaic = Mosaic::new(Mode::Normal, Editor::new(initial_content.as_str(), file_path));
     mosaic.init();
 
     let res = run(&mut terminal, mosaic);

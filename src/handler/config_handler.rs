@@ -202,16 +202,12 @@ impl CommandModeShortcuts {
 
 #[derive(Debug)]
 pub(crate) struct ConfigHandler {
-    pub command_handler: CommandHandler,
-    pub shortcut_handler: ShortcutHandler,
     pub config: Config,
 }
 
 impl ConfigHandler {
-    pub fn new(command_handler: CommandHandler, shortcut_handler: ShortcutHandler) -> Self {
+    pub fn new() -> Self {
         Self {
-            command_handler,
-            shortcut_handler,
             config: Config::default(),
         }
     }
