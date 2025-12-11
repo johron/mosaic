@@ -2,6 +2,7 @@ mod ui;
 mod input;
 mod editor;
 mod handler;
+mod panel;
 
 use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen};
@@ -133,7 +134,7 @@ impl<'a> Mosaic<'a> {
     fn register_commands(&mut self) {
         self.editor.register_commands(&mut self.command_handler, &mut self.config_handler);
 
-        self.command_handler.register_command(String::from("q"), "@", Self::quit);
+        self.command_handler.register(String::from("q"), "@", Self::quit);
     }
     
     fn reload(&mut self) {

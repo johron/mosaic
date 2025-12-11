@@ -45,7 +45,7 @@ impl CommandHandler {
         }
     }
 
-    pub fn register_command(&mut self, name: String, namespace: &str, handler: fn(&mut Mosaic, Vec<String>) -> Result<String, String>) {
+    pub fn register(&mut self, name: String, namespace: &str, handler: fn(&mut Mosaic, Vec<String>) -> Result<String, String>) {
         let command = Command {
             name,
             handler,

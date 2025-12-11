@@ -12,6 +12,12 @@ pub(crate) struct Cursor {
     pub(crate) col: usize,
 }
 
+impl Cursor {
+    pub(crate) fn new(line: usize, col: usize) -> Self {
+        Self { line, col }
+    }
+}
+
 #[derive(Debug)]
 #[derive(Clone)]
 pub(crate) struct Editor<'a> {
@@ -361,7 +367,7 @@ impl<'a> Editor<'a> {
     }
 
     pub fn register_commands(&mut self, command_handler: &mut CommandHandler, config_handler: &mut ConfigHandler) {
-        command_handler.register_command(String::from("test"),"@", |mosaic: &mut Mosaic, args: Vec<String>| {
+        command_handler.register(String::from("test"), "@", |mosaic: &mut Mosaic, args: Vec<String>| {
             Ok(String::from("Test command executed"))
         });
     }
