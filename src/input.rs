@@ -67,7 +67,7 @@ fn process_key(mosaic: &mut Mosaic, key: KeyEvent) {
     }*/
 
     // Fallback to normal mode-specific handling
-    match mosaic.mode {
+    match mosaic.state_handler.mode {
         Mode::Normal => normal::handle_mode(mosaic, key),
         Mode::Insert => insert::handle_mode(mosaic, key),
         Mode::Command => command::handle_mode(mosaic, key),
@@ -75,9 +75,14 @@ fn process_key(mosaic: &mut Mosaic, key: KeyEvent) {
 }
 
 fn handle_non_modifier(mosaic: &mut Mosaic, key_event: KeyEvent) {
-    let editor = &mut mosaic.editor;
+    if mosaic.panel_handler.get_current_editor_panel().is_none() {
+        return;
+    }
+
+    let editor = &mut mosaic.panel_handler.get_current_editor_panel().unwrap().editor;
+    
     match key_event.code {
-        KeyCode::Esc => mosaic.set_mode(Mode::Normal),
+        KeyCode::Esc => mosaic.state_handler.mode = Mode::Normal,
         KeyCode::Tab => editor.tab(),
 
         KeyCode::Char(c) => editor.input(c),

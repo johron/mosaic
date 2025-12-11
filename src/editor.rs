@@ -20,11 +20,10 @@ impl Cursor {
 
 #[derive(Debug)]
 #[derive(Clone)]
-pub(crate) struct Editor<'a> {
+pub(crate) struct Editor {
     pub(crate) rope: Rope,
     pub(crate) cursors: Vec<Cursor>,
     pub(crate) file_path: Option<String>,
-    pub(crate) block: Block<'a>,
     pub(crate) top_line: usize,
     pub(crate) height: usize,
     show_gutter: bool,
@@ -40,8 +39,9 @@ pub enum CursorMove {
     WordForward,
 }
 
-impl<'a> Editor<'a> {
-    pub(crate) fn new(initial: &str, file_path: Option<String>) -> Self {
+impl Editor {
+    pub(crate) fn new(initial: Option<&str>, file_path: Option<String>) -> Self {
+        let initial = initial.unwrap_or("");
         let rope = Rope::from_str(initial);
         let mut cursors = vec![Cursor { line: 0, col: 0 }];
         cursors[0] = Self::clamp_cursor(&rope, cursors[0].clone());
@@ -50,7 +50,6 @@ impl<'a> Editor<'a> {
             cursors,
             file_path,
             show_gutter: true,
-            block: Block::default(),
             top_line: 0,
             height: 0,
         }
@@ -352,10 +351,6 @@ impl<'a> Editor<'a> {
         }
     }
 
-    pub(crate) fn set_block(&mut self, block: Block<'a>) {
-        self.block = block;
-    }
-
     fn toggle_gutter(&mut self) {
         self.show_gutter = !self.show_gutter;
     }
@@ -373,7 +368,7 @@ impl<'a> Editor<'a> {
     }
 
     fn enter_normal_mode(mosaic: &mut Mosaic) -> Result<String, String> {
-        mosaic.set_mode(crate::Mode::Normal);
+        //mosaic.set_mode(crate::Mode::Normal);
         Ok(String::from("Entered Normal Mode"))
     }
 }

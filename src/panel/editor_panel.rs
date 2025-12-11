@@ -6,14 +6,15 @@ use crate::editor::Editor;
 use crate::handler::state_handler::StateHandler;
 use crate::Mode;
 
+#[derive(Clone, Debug)]
 pub struct EditorPanel {
-    editor: Editor,
+    pub editor: Editor,
 }
 
 impl EditorPanel {
     pub fn new() -> Self {
         Self {
-            editor: Editor::new(),
+            editor: Editor::new(None, None),
         }
     }
     
@@ -67,8 +68,9 @@ impl EditorPanel {
             lines_spans.push(Line::from(line_spans));
         }
 
+        // Have to think about how I can to the multiple editor panels later, block should be set from outside, not in editor panel
         let paragraph = Paragraph::new(lines_spans)
-            .block(self.editor.block.clone());
+            .block(block);
 
         frame.render_widget(paragraph, chunks[0]);
 

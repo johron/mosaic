@@ -1,8 +1,4 @@
 use std::io::Write;
-use std::time::Duration;
-use crate::{ui, Mosaic};
-use crate::handler::command_handler::{Command, CommandHandler};
-use crate::handler::shortcut_handler::ShortcutHandler;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Config {

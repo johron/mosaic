@@ -6,32 +6,31 @@ use crate::{Command, Mode, Mosaic};
 pub fn handle_mode(mosaic: &mut Mosaic, key: KeyEvent) {
     match key.code {
         KeyCode::Esc => {
-            mosaic.command.result = None;
-            mosaic.set_mode(Mode::Normal)
+            mosaic.state_handler.command.result = None;
+            mosaic.state_handler.mode = Mode::Normal;
         },
         KeyCode::Enter => {
             let res = handle_command(mosaic);
 
-            mosaic.command = Command {
+            mosaic.state_handler.command = Command {
                 content: String::new(),
                 result: Some(res.unwrap_or_else(|e| format!("Error: {}", e))),
             };
 
-            mosaic.set_mode(Mode::Normal);
+            mosaic.state_handler.mode = Mode::Normal;
         },
         KeyCode::Char(c) => {
-            mosaic.command += c.to_string().as_str();
+            mosaic.state_handler.command += c.to_string().as_str();
         },
         KeyCode::Backspace => {
-            mosaic.command.pop();
+            mosaic.state_handler.command.pop();
         },
         _ => {}
     }
 }
 
 pub fn handle_command(mosaic: &mut Mosaic) -> Result<String, String> {
-    let editor = &mut mosaic.editor;
-    let args = mosaic.command.content.split_whitespace().map(|s| s.to_string()).collect::<Vec<_>>();
+    let args = mosaic.state_handler.command.content.split_whitespace().map(|s| s.to_string()).collect::<Vec<_>>();
 
     let commands = mosaic.command_handler.get_commands("@");
 
@@ -46,7 +45,7 @@ pub fn handle_command(mosaic: &mut Mosaic) -> Result<String, String> {
     }
 }
 
-pub(crate) fn _handle_command(mosaic: &mut Mosaic) -> Result<String, Error> {
+/*pub(crate) fn _handle_command(mosaic: &mut Mosaic) -> Result<String, Error> {
     let editor = &mut mosaic.editor;
     let args = mosaic.command.content.as_str().split(' ').collect::<Vec<_>>();
 
@@ -186,4 +185,4 @@ pub(crate) fn _handle_command(mosaic: &mut Mosaic) -> Result<String, Error> {
             Ok(String::from("Error: Unknown command"))
         }
     }
-}
+}*/

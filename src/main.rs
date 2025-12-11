@@ -1,4 +1,4 @@
-mod ui;
+//mod ui;
 mod input;
 mod editor;
 mod handler;
@@ -19,7 +19,10 @@ use crate::editor::Editor;
 use crate::handler::command_handler::CommandHandler;
 use crate::handler::config_handler;
 use crate::handler::config_handler::{Config, ConfigHandler};
+use crate::handler::panel_handler::{Panel, PanelChild, PanelHandler};
 use crate::handler::shortcut_handler::{Shortcut, ShortcutHandler};
+use crate::handler::state_handler::StateHandler;
+use crate::panel::editor_panel::EditorPanel;
 
 #[derive(Debug, Copy, Clone)]
 enum Mode {
@@ -75,43 +78,29 @@ struct Toast {
 }
 
 #[derive(Debug, Clone)]
-struct Mosaic<'a> {
-    mode: Mode,
-    should_quit: bool,
-    command: Command,
+struct Mosaic{
     toast: Option<Toast>,
-    editor: Editor<'a>,
     current_editor: usize,
 
+    panel_handler: PanelHandler,
+    state_handler: StateHandler,
     config_handler: ConfigHandler,
     command_handler: CommandHandler,
     shortcut_handler: ShortcutHandler,
 }
 
-impl<'a> Mosaic<'a> {
-    fn new(mode: Mode, editor: Editor<'a>) -> Self {
+impl Mosaic {
+    fn new() -> Self {
         Self {
-            mode,
-            should_quit: false,
-            command: Command::new(),
             toast: None,
-            editor,
             current_editor: 0,
 
+            panel_handler: PanelHandler::new(),
+            state_handler: StateHandler::new(),
             config_handler: ConfigHandler::new(),
             command_handler: CommandHandler::new(),
             shortcut_handler: ShortcutHandler::new(),
         }
-    }
-
-    fn set_mode(&mut self, mode: Mode) {
-        self.mode = mode;
-        self.command.clear();
-    }
-
-    fn quit(mosaic: &mut Mosaic, args: Vec<String>) -> Result<String, String> {
-        mosaic.should_quit = true;
-        Ok(String::from("Quitting Mosaic..."))
     }
 
     fn show_toast(&mut self, message: &str, duration: Duration) {
@@ -125,16 +114,24 @@ impl<'a> Mosaic<'a> {
     }
 
     fn init(&mut self) {
+        self.panel_handler.add_panel(
+            Panel::new(String::from("editor_1"), PanelChild::Editor(EditorPanel::new()))
+        );
+            
+            
         self.config_handler.load_config();
         self.register_commands();
 
-        self.editor.register_shortcuts(&mut self.shortcut_handler, &mut self.config_handler);
+        //self.editor.register_shortcuts(&mut self.shortcut_handler, &mut self.config_handler);
     }
 
     fn register_commands(&mut self) {
-        self.editor.register_commands(&mut self.command_handler, &mut self.config_handler);
+        //self.editor.register_commands(&mut self.command_handler, &mut self.config_handler);
 
-        self.command_handler.register(String::from("q"), "@", Self::quit);
+       self.command_handler.register(String::from("q"), "@", |mosaic, _args| {
+            mosaic.state_handler.should_quit = true;
+           Ok(String::from("Quit command executed"))
+       });
     }
     
     fn reload(&mut self) {
@@ -171,7 +168,7 @@ fn main() -> io::Result<()> {
     //text_area.set_tab_length(4);
 
 
-    let mut mosaic = Mosaic::new(Mode::Normal, Editor::new(initial_content.as_str(), file_path));
+    let mut mosaic = Mosaic::new();
     mosaic.init();
 
     let res = run(&mut terminal, mosaic);
@@ -190,19 +187,29 @@ fn main() -> io::Result<()> {
 fn run(terminal: &mut Terminal<CrosstermBackend<StdoutLock>>, mut mosaic: Mosaic) -> io::Result<()> {
     loop {
         terminal.draw(|frame| {
-            ui::draw(frame, &mut mosaic); // pass immutable state
+            //ui::draw(frame, &mut mosaic); // pass immutable state
+            
+            for panel in &mut mosaic.panel_handler.panels {
+                match &mut panel.child {
+                    PanelChild::Editor(editor_panel) => {
+                        editor_panel.draw(frame, &mut mosaic.state_handler);
+                    }
+                    _ => {
+                    }
+                }
+            }
         })?;
 
-        if mosaic.toast.is_some() {
-            let toast = mosaic.toast.as_ref().unwrap();
-            if toast.start_time.elapsed() >= toast.duration {
-                mosaic.toast = None;
-            }
-        }
+        //if mosaic.toast.is_some() {
+        //    let toast = mosaic.toast.as_ref().unwrap();
+        //    if toast.start_time.elapsed() >= toast.duration {
+        //        mosaic.toast = None;
+        //    }
+        //}
 
         input::handle(&mut mosaic).expect("TODO: panic message");
 
-        if mosaic.should_quit {
+        if mosaic.state_handler.should_quit {
             break Ok(());
         }
     }

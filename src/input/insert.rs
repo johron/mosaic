@@ -4,23 +4,27 @@ use crate::input::handle_non_modifier;
 use crate::Mosaic;
 
 pub fn handle_mode(mosaic: &mut Mosaic, key_event: KeyEvent) {
-    let text_area = &mut mosaic.editor;
+    if mosaic.panel_handler.get_current_editor_panel().is_none() {
+        return;
+    }
+    
+    let editor = &mut mosaic.panel_handler.get_current_editor_panel().unwrap().editor;
 
     if key_event.modifiers.is_empty() {
         handle_non_modifier(mosaic, key_event);
     } else {
         match key_event {
             KeyEvent { code: KeyCode::Left, modifiers: KeyModifiers::CONTROL, .. } => {
-                text_area.move_cursor(CursorMove::WordBack)
+                editor.move_cursor(CursorMove::WordBack)
             },
             KeyEvent { code: KeyCode::Up, modifiers: KeyModifiers::CONTROL, .. } => {
-                text_area.scroll_up();
+                editor.scroll_up();
             },
             KeyEvent { code: KeyCode::Down, modifiers: KeyModifiers::CONTROL, .. } => {
-                text_area.scroll_down();
+                editor.scroll_down();
             },
             KeyEvent { code: KeyCode::Right, modifiers: KeyModifiers::CONTROL, .. } => {
-                text_area.move_cursor(CursorMove::WordForward)
+                editor.move_cursor(CursorMove::WordForward)
             },
             _ => {
                 // KeyEvent is alphabetic? do here

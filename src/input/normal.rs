@@ -3,17 +3,21 @@ use crate::{Mode, Mosaic};
 use crate::editor::CursorMove;
 
 pub fn handle_mode(mosaic: &mut Mosaic, key_event: KeyEvent) {
-    let editor = &mut mosaic.editor;
+    if mosaic.panel_handler.get_current_editor_panel().is_none() {
+        return;
+    }
+
+    let editor = &mut mosaic.panel_handler.get_current_editor_panel().unwrap().editor;
 
     if key_event.modifiers.is_empty() {
         match key_event.code {
             KeyCode::Esc => {
-                mosaic.command.result = None;
+                mosaic.state_handler.command.result = None;
             },
-            KeyCode::Char('i') => mosaic.set_mode(Mode::Insert),
+            KeyCode::Char('i') => mosaic.state_handler.mode = Mode::Insert,
             KeyCode::Char('q') => {
-                mosaic.command.result = None;
-                mosaic.set_mode(Mode::Command)
+                mosaic.state_handler.command.result = None;
+                mosaic.state_handler.mode = Mode::Command;
             },
 
             KeyCode::Char('j') | KeyCode::Left => editor.move_cursor(CursorMove::Back),
