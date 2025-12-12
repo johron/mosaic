@@ -1,20 +1,29 @@
+use std::collections::HashMap;
 use ratatui::Frame;
 use ratatui::layout::{Alignment, Constraint, Direction, Layout, Position};
-use ratatui::prelude::{Line, Span};
+use ratatui::prelude::{Color, Line, Span};
 use ratatui::widgets::{Block, Paragraph};
 use crate::editor::Editor;
 use crate::handler::state_handler::StateHandler;
+use crate::handler::syntax_handler::SyntaxHandler;
 use crate::Mode;
 
 #[derive(Clone, Debug)]
 pub struct EditorPanel {
     pub editor: Editor,
+    pub syntax_handler: SyntaxHandler
 }
 
 impl EditorPanel {
     pub fn new() -> Self {
+        let mut syntax_handler = SyntaxHandler::new();
+        syntax_handler.load_syntaxes(HashMap::from([
+            ("rs".to_string(), "rust".to_string()),
+        ]));
+
         Self {
             editor: Editor::new(None, None),
+            syntax_handler,
         }
     }
     
@@ -52,6 +61,7 @@ impl EditorPanel {
 
         self.editor.height = height;
 
+
         let max_line = std::cmp::min(
             self.editor.rope.len_lines(),
             top_line.saturating_add(height),
@@ -61,8 +71,8 @@ impl EditorPanel {
             let rope_line = self.editor.rope.line(i);
             let text_line = rope_line.to_string();
             // convert text_line to spans, do not highlight for now
-            let spans = vec![Span::raw(text_line)];
-            let mut line_spans = vec![Span::raw(format!("{:4} ", i))]; // small gutter
+            let spans = self.highlight_line(text_line);
+            let mut line_spans = vec![Span::styled(format!("{:4} ", i), ratatui::style::Style::default().fg(Color::Gray))]; // small gutter
 
             line_spans.extend(spans);
             lines_spans.push(Line::from(line_spans));
@@ -80,5 +90,9 @@ impl EditorPanel {
             let cursor_y = chunks[0].y + (cursor.line.saturating_sub(top_line)) as u16;
             frame.set_cursor_position(Position::new(cursor_x, cursor_y));
         }
+    }
+
+    fn highlight_line(&mut self, line: String) -> Vec<Span<'static>> {
+        self.syntax_handler.configs.first().unwrap().highlight_line(line)
     }
 }

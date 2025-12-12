@@ -19,6 +19,9 @@ pub fn handle(mosaic: &mut Mosaic) -> Result<(), Error> {
 
             process_key(mosaic, key_event);
         }
+        //if let Event::Mouse(mouse_event) = event::read()? {
+        //    // process mouse event
+        //}
     }
 
     Ok(())

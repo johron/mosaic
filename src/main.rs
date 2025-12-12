@@ -101,6 +101,12 @@ impl Mosaic {
         }
     }
 
+    fn open_in_current_editor(&mut self, file_path: &str) {
+        if let Some(editor_panel) = self.panel_handler.get_current_editor_panel() {
+            editor_panel.editor.open_file(file_path);
+        }
+    }
+
     fn show_toast(&mut self, message: &str, duration: Duration) {
         let toast = Toast {
             message: message.to_string(),
@@ -164,12 +170,12 @@ fn main() -> io::Result<()> {
         }
     }
 
-    //text_area.set_line_number_style(Style::default().fg(Color::DarkGray));
-    //text_area.set_tab_length(4);
-
-
     let mut mosaic = Mosaic::new();
     mosaic.init();
+
+    if let Some(path) = file_path.as_ref() {
+        mosaic.open_in_current_editor(path);
+    }
 
     let res = run(&mut terminal, mosaic);
 

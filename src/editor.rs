@@ -55,6 +55,16 @@ impl Editor {
         }
     }
 
+    pub fn open_file(&mut self, file_path: &str) {
+        if let Ok(content) = std::fs::read_to_string(file_path) {
+            self.rope = Rope::from_str(&content);
+            self.file_path = Some(file_path.to_string());
+            self.cursors = vec![Cursor { line: 0, col: 0 }];
+            self.cursors[0] = Self::clamp_cursor(&self.rope, self.cursors[0].clone());
+            self.top_line = 0;
+        }
+    }
+    
     fn line_visible_len(&self, line: usize) -> usize {
         let len = self.rope.line(line).len_chars();
         if len == 0 {
