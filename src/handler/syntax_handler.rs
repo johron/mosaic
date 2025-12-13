@@ -6,13 +6,24 @@ use ropey::Rope;
 #[derive(Debug, Clone)]
 pub struct SyntaxHandler {
     pub configs: Vec<SyntaxConfig>,
+    pub syntax_entry_config: Vec<SyntaxEntryConfig>
 }
 
 impl SyntaxHandler {
     pub fn new() -> Self {
         Self {
             configs: Vec::new(),
+            syntax_entry_config: Vec::new(),
         }
+    }
+
+    pub fn get_syntax_by_extension(&self, extension: &str) -> Option<&SyntaxConfig> {
+        for config in &self.configs {
+            if config.extension == extension {
+                return Some(config);
+            }
+        }
+        None
     }
 
     fn write_default_syntax(&mut self, extension: &str, filename: &str) {
@@ -41,8 +52,16 @@ impl SyntaxHandler {
 
     }
 
-    pub fn load_syntaxes(&mut self, syntax_highlighting: HashMap<String, String>) { // HashMap<extension, filename>
-        // each syntax config is stored in a separate file in the "syntaxes" directory
+    pub fn load_syntaxes(&mut self) { // HashMap<extension, filename>
+        // each syntax config is stored in a separate file in the `./config/syntaxes` directory
+        self.load_syntax_entries();
+
+        // use syntax_entry_config to load syntaxes to get syntax_highlighting
+        let syntax_highlighting: Vec<(String, String)> = self
+            .syntax_entry_config
+            .iter()
+            .map(|entry| (entry.extension.clone(), entry.filename.clone()))
+            .collect();
 
         let syntaxes_dir = std::path::Path::new("./config/syntaxes");
         if !syntaxes_dir.exists() {
@@ -52,8 +71,8 @@ impl SyntaxHandler {
             }
         }
 
-        for (extension, filename) in syntax_highlighting.iter() {
-            let file_path = syntaxes_dir.join(filename.to_owned() + ".toml");
+        for (extension, filename) in syntax_highlighting {
+            let file_path = syntaxes_dir.join(format!("{}.toml", filename));
             if file_path.exists() {
                 match std::fs::read_to_string(&file_path) {
                     Ok(content) => {
@@ -72,8 +91,68 @@ impl SyntaxHandler {
                 }
             } else {
                 // write default syntax config if file doesn't exist
-                self.write_default_syntax(extension, filename);
+                self.write_default_syntax(&extension, &filename);
             }
+        }
+    }
+
+    pub fn load_syntax_entries(&mut self) {
+        let config_dir = std::path::Path::new("./config");
+        if !config_dir.exists() {
+            if let Err(e) = std::fs::create_dir_all(config_dir) {
+                eprintln!("Failed to create config directory: {}", e);
+                return;
+            }
+        }
+
+        let file_path = config_dir.join("syntax_entries.toml");
+        if !file_path.exists() {
+            // create an empty array as a sensible default
+            if let Err(e) = std::fs::write(&file_path, "\n") {
+                eprintln!("Failed to write default syntax entries `{}`: {}", file_path.display(), e);
+            }
+            return;
+        }
+
+        match std::fs::read_to_string(&file_path) {
+            Ok(content) => {
+                // try parse as a plain array of tables first
+                if let Ok(entries) = toml::from_str::<Vec<SyntaxEntryConfig>>(&content) {
+                    self.syntax_entry_config = entries;
+                    return;
+                }
+
+                // fall back to parsing a table with a key `syntax_entries = [ ... ]`
+                match toml::from_str::<toml::Value>(&content) {
+                    Ok(val) => {
+                        if let Some(tbl) = val.get("syntax_entries") {
+                            match tbl.clone().try_into::<Vec<SyntaxEntryConfig>>() {
+                                Ok(entries) => self.syntax_entry_config = entries,
+                                Err(e) => eprintln!("Failed to deserialize `syntax_entries` in `{}`: {}", file_path.display(), e),
+                            }
+                        } else {
+                            eprintln!("No `syntax_entries` array found in `{}`", file_path.display());
+                        }
+                    }
+                    Err(e) => eprintln!("Failed to parse syntax entries `{}`: {}", file_path.display(), e),
+                }
+            }
+            Err(e) => eprintln!("Failed to read syntax entries `{}`: {}", file_path.display(), e),
+        }
+    }
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub(crate) struct SyntaxEntryConfig {
+    pub extension: String,
+    pub filename: String,
+}
+
+impl SyntaxEntryConfig {
+    pub fn new(extension: &str, filename: &str) -> Self {
+        Self {
+            extension: extension.to_string(),
+            filename: filename.to_string(),
         }
     }
 }
@@ -96,7 +175,7 @@ impl SyntaxConfig {
         }
     }
 
-    pub(crate) fn highlight_line(&self, top_line: usize, max_line: usize, rope: &Rope) -> Vec<Line<'static>> {
+    pub(crate) fn highlight(&self, top_line: usize, max_line: usize, rope: &Rope) -> Vec<Line<'static>> {
         let mut lines_spans: Vec<Line> = Vec::new();
 
         use ratatui::style::{Color, Style};

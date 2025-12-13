@@ -65,6 +65,15 @@ impl Editor {
         }
     }
     
+    pub fn get_file_extension(&self) -> Option<String> {
+        if let Some(ref path) = self.file_path {
+            if let Some(ext) = std::path::Path::new(path).extension() {
+                return Some(ext.to_string_lossy().to_string());
+            }
+        }
+        None
+    }
+    
     fn line_visible_len(&self, line: usize) -> usize {
         let len = self.rope.line(line).len_chars();
         if len == 0 {

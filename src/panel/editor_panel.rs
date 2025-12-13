@@ -18,9 +18,7 @@ pub struct EditorPanel {
 impl EditorPanel {
     pub fn new() -> Self {
         let mut syntax_handler = SyntaxHandler::new();
-        syntax_handler.load_syntaxes(HashMap::from([
-            ("rs".to_string(), "rust".to_string()),
-        ]));
+        syntax_handler.load_syntaxes();
 
         Self {
             editor: Editor::new(None, None),
@@ -84,6 +82,27 @@ impl EditorPanel {
     }
 
     fn highlight_line(&mut self, top_line: usize, max_line: usize, rope: Rope) -> Vec<Line> {
-        self.syntax_handler.configs.first().unwrap().highlight_line(top_line, max_line, &rope)
+        if let Some(syntax) = self.syntax_handler.get_syntax_by_extension(self.editor.get_file_extension().unwrap_or(String::from("")).as_str()) {
+            syntax.highlight(
+                top_line,
+                max_line,
+                &rope,
+            )
+        } else {
+            let mut lines_spans: Vec<Line> = Vec::new();
+
+            for i in top_line..max_line {
+                let rope_line = self.editor.rope.line(i);
+                let text_line = rope_line.to_string();
+                // convert text_line to spans, do not highlight for now
+                let spans = vec![Span::raw(text_line)];
+                let mut line_spans = vec![Span::styled(format!("{:4} ", i), ratatui::style::Style::default().fg(Color::Gray))]; // small gutter
+
+                line_spans.extend(spans);
+                lines_spans.push(Line::from(line_spans));
+            }
+
+            lines_spans
+        }
     }
 }
