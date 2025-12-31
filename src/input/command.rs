@@ -1,7 +1,5 @@
-use std::io::Error;
-use std::time::Duration;
-use crossterm::event::{KeyCode, KeyEvent};
 use crate::{Command, Mode, Mosaic};
+use crossterm::event::{KeyCode, KeyEvent};
 
 pub fn handle_mode(mosaic: &mut Mosaic, key: KeyEvent) {
     match key.code {

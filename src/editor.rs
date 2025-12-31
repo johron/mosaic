@@ -1,10 +1,9 @@
-use std::cmp::min;
-use ratatui::widgets::Block;
-use ropey::Rope;
 use crate::handler::command_handler::CommandHandler;
 use crate::handler::config_handler::ConfigHandler;
 use crate::handler::shortcut_handler::ShortcutHandler;
 use crate::Mosaic;
+use ropey::Rope;
+use std::cmp::min;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Cursor {

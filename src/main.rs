@@ -4,25 +4,23 @@ mod editor;
 mod handler;
 mod panel;
 
+use crate::handler::command_handler::CommandHandler;
+use crate::handler::config_handler::ConfigHandler;
+use crate::handler::panel_handler::{Panel, PanelChild, PanelHandler};
+use crate::handler::shortcut_handler::ShortcutHandler;
+use crate::handler::state_handler::StateHandler;
+use crate::panel::editor_panel::EditorPanel;
 use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::backend::CrosstermBackend;
-use ratatui::style::{Color, Style, Stylize};
+use ratatui::style::Stylize;
 use ratatui::Terminal;
 use std::fmt::Display;
 use std::io::{BufRead, StdoutLock};
 use std::ops::AddAssign;
 use std::str::FromStr;
-use std::{env, fmt, fs, io};
 use std::time::{Duration, Instant};
-use crate::editor::Editor;
-use crate::handler::command_handler::CommandHandler;
-use crate::handler::config_handler;
-use crate::handler::config_handler::{Config, ConfigHandler};
-use crate::handler::panel_handler::{Panel, PanelChild, PanelHandler};
-use crate::handler::shortcut_handler::{Shortcut, ShortcutHandler};
-use crate::handler::state_handler::StateHandler;
-use crate::panel::editor_panel::EditorPanel;
+use std::{env, fmt, fs, io};
 
 #[derive(Debug, Copy, Clone)]
 enum Mode {

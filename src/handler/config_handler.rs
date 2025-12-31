@@ -1,6 +1,4 @@
-use std::collections::HashMap;
 use std::io::Write;
-use crate::handler::syntax_handler::SyntaxHandler;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Config {

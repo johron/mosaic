@@ -1,4 +1,3 @@
-use crate::handler::command_handler::CommandHandler;
 use crate::Mosaic;
 
 #[derive(Debug, Clone)]

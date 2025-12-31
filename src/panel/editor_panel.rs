@@ -1,13 +1,12 @@
-use std::collections::HashMap;
-use ratatui::Frame;
-use ratatui::layout::{Alignment, Constraint, Direction, Layout, Position};
-use ratatui::prelude::{Color, Line, Span};
-use ratatui::widgets::{Block, Paragraph};
-use ropey::Rope;
 use crate::editor::Editor;
 use crate::handler::state_handler::StateHandler;
 use crate::handler::syntax_handler::SyntaxHandler;
 use crate::Mode;
+use ratatui::layout::{Alignment, Constraint, Direction, Layout, Position};
+use ratatui::prelude::{Color, Line, Span};
+use ratatui::widgets::{Block, Paragraph};
+use ratatui::Frame;
+use ropey::Rope;
 
 #[derive(Clone, Debug)]
 pub struct EditorPanel {

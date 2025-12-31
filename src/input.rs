@@ -1,14 +1,14 @@
 use crate::{Mode, Mosaic};
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{self, Event, KeyCode, KeyEvent};
 use std::io::Error;
 
 mod normal;
 mod insert;
 mod command;
 
-use std::sync::{Mutex, OnceLock};
-use std::time::{Instant, Duration};
 use crate::editor::CursorMove;
+use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
 
 static MOS_PREFIX: OnceLock<Mutex<Option<Instant>>> = OnceLock::new();
 

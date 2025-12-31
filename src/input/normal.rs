@@ -1,6 +1,6 @@
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
-use crate::{Mode, Mosaic};
 use crate::editor::CursorMove;
+use crate::{Mode, Mosaic};
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 pub fn handle_mode(mosaic: &mut Mosaic, key_event: KeyEvent) {
     if mosaic.panel_handler.get_current_editor_panel().is_none() {

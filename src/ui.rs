@@ -1,14 +1,14 @@
 mod highlight;
 
+use crate::ui::highlight::highlight_line;
 use crate::{Mode, Mosaic};
+use ratatui::text::{Line, Span};
+use ratatui::widgets::{Borders, Paragraph};
 use ratatui::{
     prelude::*,
     widgets::Block,
 };
-use ratatui::text::{Span, Line};
-use ratatui::widgets::{Borders, Paragraph};
 use regex::Regex;
-use crate::ui::highlight::highlight_line;
 
 pub fn draw(frame: &mut Frame, mosaic: &mut Mosaic) {
     mosaic.editor.set_block(

@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use crate::panel::editor_panel::EditorPanel;
 
 #[derive(Debug, Clone)]

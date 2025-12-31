@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-use ratatui::crossterm::style::Color;
 use ratatui::text::{Line, Span};
 use ropey::Rope;
 
