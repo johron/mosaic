@@ -1,20 +1,86 @@
+use ratatui::Frame;
+use ratatui::layout::Rect;
+use crate::handler::panel_handler::Anchor::{BottomLeft, BottomRight, TopLeft, TopRight};
 use crate::panel::editor::editor_panel::EditorPanel;
+
+#[derive(Debug, Clone)]
+#[derive(PartialEq)]
+pub enum Anchor {
+    TopLeft,
+    TopRight,
+    BottomRight,
+    BottomLeft
+}
+
+impl Anchor {
+    pub fn all() -> Vec<Anchor> {
+        vec![TopLeft, TopRight, BottomRight, BottomLeft]
+    }
+
+    pub fn get_opposite(anchor: &Anchor) -> Anchor {
+        match anchor {
+            TopLeft => BottomRight,
+            TopRight => BottomLeft,
+            BottomRight => TopLeft,
+            BottomLeft => TopRight,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Geometry {
+    anchors: Vec<Anchor>
+}
+
+impl Geometry {
+    pub fn new(anchors: Vec<Anchor>) -> Self {
+        Self {
+            anchors
+        }
+    }
+
+    pub fn is_valid(&self) -> Result<String, String> { // check if it is valid by itself, not together with other elements, replace result with better that can be used to diagnose for program
+        if self.anchors == Anchor::all() {
+            return Ok(String::from("Valid"));
+        }
+
+        if self.anchors.len() == 1 {
+            return Ok(String::from("Valid"));
+        }
+
+        if self.anchors.len() < 1 {
+            return Err(String::from("Invalid, len() <= 0"));
+        }
+
+        if self.anchors.len() > 2 {
+            return Err(String::from("Invalid, len() > 3"));
+        }
+
+        if self.anchors.len() == 2 {
+            if self.anchors.contains(&Anchor::get_opposite(&self.anchors[0])) {
+                return Err(String::from("Anchors may not be opposites"));
+            }
+
+            return Ok(String::from("Valid"));
+        }
+
+        Err(String::from("Invalid, unknown reason"))
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct Panel {
     pub id: String,
     pub child: PanelChild,
-    pub position: (u16, u16),
-    pub size: (u16, u16),
+    pub geometry: Geometry
 }
 
 impl Panel {
-    pub fn new(id: String, child: PanelChild) -> Self {
+    pub fn new(id: String, child: PanelChild, geometry: Geometry) -> Self {//, geometry: Geometry) -> Self {
         Self {
             id,
             child,
-            position: (0, 0),
-            size: (0, 0),
+            geometry,
         }
     }
 }
@@ -23,11 +89,12 @@ impl Panel {
 pub enum PanelChild {
     Editor(EditorPanel),
     Explorer(/*ExplorerPanel*/),
+    Shared(PanelHandler)
 }
 
 #[derive(Debug, Clone)]
 pub struct PanelHandler {
-    pub(crate) panels: Vec<Panel>,
+    pub panels: Vec<Panel>,
     current_panel_id: Option<String>,
 }
 
@@ -74,5 +141,41 @@ impl PanelHandler {
             }
         }
         None
+    }
+
+    pub fn draw(&mut self, frame: &mut Frame) {
+        let area = frame.area();
+
+        for panel in &mut self.panels {
+            let rect = match panel.geometry.anchors[0] {
+                TopLeft => {
+                    Rect::new(
+                        0, 0, area.width/2, area.height/2
+                    )
+                },
+                TopRight => {
+                    Rect::new(
+                        area.width/2, 0, area.height/2, area.height/2
+                    )
+                },
+                BottomLeft => {
+                    Rect::new(
+                        0, area.height/2, area.width/2, area.height/2
+                    )
+                },
+                BottomRight => {
+                    Rect::new(
+                        area.width/2, area.height/2, area.width/2, area.height/2
+                    )
+                },
+            };
+
+            match &mut panel.child {
+                PanelChild::Editor(editor_panel) => {
+                    editor_panel.draw(frame, rect);
+                }
+                _ => {}
+            }
+        }
     }
 }

@@ -2,7 +2,7 @@ use crate::panel::editor::editor_logic::Editor;
 use crate::handler::state_handler::StateHandler;
 use crate::handler::syntax_handler::SyntaxHandler;
 use crate::Mode;
-use ratatui::layout::{Alignment, Constraint, Direction, Layout, Position};
+use ratatui::layout::{Alignment, Constraint, Direction, Layout, Position, Rect};
 use ratatui::prelude::{Color, Line, Span};
 use ratatui::widgets::{Block, Paragraph};
 use ratatui::Frame;
@@ -25,8 +25,8 @@ impl EditorPanel {
         }
     }
     
-    pub fn draw(&mut self, frame: &mut Frame, state_handler: &mut StateHandler) {
-        let block = match state_handler.mode {
+    pub fn draw(&mut self, frame: &mut Frame, size: Rect) {//, state_handler: &mut StateHandler) {
+        /*let block = match state_handler.mode {
             Mode::Normal => {
                 if state_handler.command.result.is_some() {
                     Block::new()
@@ -45,9 +45,11 @@ impl EditorPanel {
                 Block::new()
                     .title_bottom(format!("/{}", state_handler.command.content))
             },
-        };
+        };*/
         
-        let size = frame.area();
+        //let size = frame.area();
+        //let size = Rect::new(0, 0, 75, 30);
+        //println!("{:?}", size);
         let chunks = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([Constraint::Percentage(100)].as_ref())
@@ -58,7 +60,6 @@ impl EditorPanel {
 
         self.editor.height = height;
 
-
         let max_line = std::cmp::min(
             self.editor.rope.len_lines(),
             top_line.saturating_add(height),
@@ -67,8 +68,8 @@ impl EditorPanel {
         let lines_spans: Vec<Line> = self.highlight_line(top_line, max_line, self.editor.rope.clone());
 
         // Have to think about how I can to the multiple editor panels later, block should be set from outside, not in editor panel
-        let paragraph = Paragraph::new(lines_spans)
-            .block(block);
+        let paragraph = Paragraph::new(lines_spans);
+            //.block(block);
 
         frame.render_widget(paragraph, chunks[0]);
 
@@ -77,7 +78,7 @@ impl EditorPanel {
             let cursor_x = chunks[0].x + 5 + cursor.col as u16; // 5 for gutter
             let cursor_y = chunks[0].y + (cursor.line.saturating_sub(top_line)) as u16;
             frame.set_cursor_position(Position::new(cursor_x, cursor_y));
-        }
+        } // TODO: this doesnt work as crossterm only supports one cursor!
     }
 
     fn highlight_line(&mut self, top_line: usize, max_line: usize, rope: Rope) -> Vec<Line> {

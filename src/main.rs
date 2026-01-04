@@ -4,7 +4,7 @@ mod input;
 
 use crate::handler::command_handler::CommandHandler;
 use crate::handler::config_handler::ConfigHandler;
-use crate::handler::panel_handler::{Panel, PanelChild, PanelHandler};
+use crate::handler::panel_handler::{Anchor, Geometry, Panel, PanelChild, PanelHandler};
 use crate::handler::shortcut_handler::ShortcutHandler;
 use crate::handler::state_handler::StateHandler;
 use crate::handler::input_handler::InputHandler;
@@ -18,6 +18,7 @@ use std::ops::AddAssign;
 use std::time::{Duration, Instant};
 use std::{env, fmt, fs, io};
 use panel::editor::editor_logic::Editor;
+use crate::handler::panel_handler::Anchor::{BottomLeft, BottomRight, TopLeft, TopRight};
 use crate::panel::editor::editor_panel::EditorPanel;
 use crate::panel::editor::editor_shortcuts;
 
@@ -117,9 +118,21 @@ impl Mosaic {
 
     fn init(&mut self) {
         self.panel_handler.add_panel(
-            Panel::new(String::from("editor_1"), PanelChild::Editor(EditorPanel::new()))
+            Panel::new(String::from("editor_1"), PanelChild::Editor(EditorPanel::new()), Geometry::new(vec![TopLeft]))
         );
-        self.panel_handler.set_current_panel(Some(String::from("editor_1")));
+        //self.panel_handler.set_current_panel(Some(String::from("editor_1")));
+
+        self.panel_handler.add_panel(
+            Panel::new(String::from("editor_2"), PanelChild::Editor(EditorPanel::new()), Geometry::new(vec![TopRight]))
+        );
+        self.panel_handler.add_panel(
+            Panel::new(String::from("editor_3"), PanelChild::Editor(EditorPanel::new()), Geometry::new(vec![BottomLeft]))
+        );
+        self.panel_handler.add_panel(
+            Panel::new(String::from("editor_4"), PanelChild::Editor(EditorPanel::new()), Geometry::new(vec![BottomRight]))
+        );
+        self.panel_handler.set_current_panel(Some(String::from("editor_4")));
+
 
         self.config_handler.load_config();
         // Set state and editor config based on config ^
@@ -134,9 +147,14 @@ impl Mosaic {
         //self.editor.register_commands(&mut self.command_handler, &mut self.config_handler);
 
        self.command_handler.register(String::from("q"), "@", |mosaic, _args| {
-            mosaic.state_handler.should_quit = true;
+           mosaic.state_handler.should_quit = true;
            Ok(String::from("Quit command executed"))
        });
+        self.command_handler.register(String::from("valid"), "@", |mosaic, _args| {
+            let panel = mosaic.panel_handler.get_current_panel().unwrap();
+            let is_valid = panel.geometry.is_valid();
+            Ok(format!("{:?}", is_valid))
+        });
     }
 
     fn register_shortcuts(&mut self) {
@@ -200,14 +218,7 @@ fn run(terminal: &mut Terminal<CrosstermBackend<StdoutLock>>, mut mosaic: Mosaic
         terminal.draw(|frame| {
             //ui::draw(frame, &mut mosaic); // pass immutable state
 
-            for panel in &mut mosaic.panel_handler.panels {
-                match &mut panel.child {
-                    PanelChild::Editor(editor_panel) => {
-                        editor_panel.draw(frame, &mut mosaic.state_handler);
-                    }
-                    _ => {}
-                }
-            }
+            mosaic.panel_handler.draw(frame);
         })?;
 
         //if mosaic.toast.is_some() {
