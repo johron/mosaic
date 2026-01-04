@@ -13,10 +13,13 @@ impl InputHandler {
 
     pub(crate) fn handle(mosaic: &mut Mosaic) -> Result<(), Error> {
         if event::poll(Duration::from_millis(10))? {
-            if let Event::Key(key_event) = event::read()? {
+            // collect any key events that arrive within a short window so we can
+            // treat multiple keys pressed together as a single input set
+            let key_events = Self::collect_simultaneous_key_events(30)?;
+            if !key_events.is_empty() {
                 mosaic.toast = None;
 
-                Self::process_key(mosaic, key_event).expect("TODO: panic message");
+                Self::process_key_events(mosaic, key_events).expect("TODO: panic message");
             }
             //if let Event::Mouse(mouse_event) = event::read()? {
             //    // process mouse event
@@ -34,9 +37,8 @@ impl InputHandler {
         let char = key.code.to_string();
 
         if !char.is_empty() {
-            //let mut new_char = char..as_str();
-            let new_char = match char.clone().to_lowercase().as_str() {
-                "back tab" => {
+            let new_char = match char.clone().replace(" ", "").to_lowercase().as_str() {
+                "backtab" => {
                      "tab"
                 }
                 _ => {
@@ -49,23 +51,31 @@ impl InputHandler {
         }
 
         if !modifier.is_empty() {
+            println!("not empty");
             let mods = modifier.split("+");
             for modi in mods {
-                pressed.push(modi.to_lowercase());
+                pressed.push(modi.to_lowercase().replace(" ", ""));
             }
         }
 
         pressed.sort();
-        //println!("{:?}", pressed);
+        println!("{:?}", pressed);
 
         for shortcut in mosaic.shortcut_handler.get_shortcuts() {
             let mode = format!("mode.{}", mosaic.state_handler.mode.clone().to_string().to_lowercase());
 
             if shortcut.name.starts_with(mode.as_str()) || !shortcut.name.starts_with("mode.") {
-                let mut input: Vec<String> = shortcut.input.split("+").map(String::from).collect();
+                let mut input: Vec<String> = shortcut.input.split("|").map(String::from).collect();
                 input.sort();
-                if input == pressed {
-                    return (shortcut.handler)(mosaic);
+
+                for s in input {
+                    let mut split: Vec<String> = s.replace(" ", "").split("+").map(String::from).collect();
+                    split.sort();
+
+                    println!("{:?}", split);
+                    if split == pressed {
+                        return (shortcut.handler)(mosaic);
+                    }
                 }
             }
         }
@@ -87,7 +97,11 @@ impl InputHandler {
         let editor = &mut mosaic.panel_handler.get_current_editor_panel().unwrap().editor;
 
         match key_event.code {
-            KeyCode::Char(c) => editor.input(c),
+            KeyCode::Char(c) => {
+                if key_event.modifiers.is_empty() {
+                    editor.input(c)
+                }
+            },
             _ => {
                 return Ok(String::from("Unmapped input"));
             }

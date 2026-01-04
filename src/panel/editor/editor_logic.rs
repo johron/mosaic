@@ -27,14 +27,14 @@ pub(crate) struct Editor {
     show_gutter: bool,
 }
 
-pub enum CursorMove {
-    Back,
-    Forward,
+pub enum CursorDirection {
+    Left,
+    Right,
     Up,
     Down,
 
-    WordBack,
-    WordForward,
+    WordRight,
+    WordLeft,
 }
 
 impl Editor {
@@ -230,11 +230,11 @@ impl Editor {
         }
     }
 
-    pub fn move_cursor(&mut self, direction: CursorMove) {
+    pub fn move_cursor(&mut self, direction: CursorDirection) {
         let idx = 0; // for now, move only the first cursor
 
         match direction {
-            CursorMove::Back => {
+            CursorDirection::Left => {
                 if self.cursors[idx].col > 0 {
                     self.cursors[idx].col -= 1;
                 } else if self.cursors[idx].line > 0 {
@@ -243,7 +243,7 @@ impl Editor {
                 }
                 self.cursors[idx] = Self::clamp_cursor(&self.rope, self.cursors[idx].clone());
             }
-            CursorMove::Forward => {
+            CursorDirection::Right => {
                 let line_len = self.line_visible_len(self.cursors[idx].line);
                 if self.cursors[idx].col < line_len {
                     self.cursors[idx].col += 1;
@@ -253,7 +253,7 @@ impl Editor {
                 }
                 self.cursors[idx] = Self::clamp_cursor(&self.rope, self.cursors[idx].clone());
             }
-            CursorMove::Up => {
+            CursorDirection::Up => {
                 if self.cursors[idx].line > 0 {
                     self.cursors[idx].line -= 1;
                     let line_len = self.line_visible_len(self.cursors[idx].line);
@@ -267,7 +267,7 @@ impl Editor {
 
                 self.update_scroll(idx);
             }
-            CursorMove::Down => {
+            CursorDirection::Down => {
                 if self.cursors[idx].line + 1 < self.rope.len_lines() {
                     self.cursors[idx].line += 1;
                     let line_len = self.line_visible_len(self.cursors[idx].line);
@@ -281,7 +281,7 @@ impl Editor {
 
                 self.update_scroll(idx);
             }
-            CursorMove::WordBack => {
+            CursorDirection::WordLeft => { // TODO: should not skip over multiple newlines at once, only one at a time, applies to WordRight too
                 let idx = 0;
                 let mut pos = self.cursor_abs_pos(&self.cursors[idx]);
                 if pos == 0 {
@@ -304,7 +304,7 @@ impl Editor {
                 }
                 self.cursors[idx] = Self::clamp_cursor(&self.rope, self.cursors[idx].clone());
             }
-            CursorMove::WordForward => {
+            CursorDirection::WordRight => {
                 let idx = 0;
                 let total = self.rope.len_chars();
                 let mut pos = self.cursor_abs_pos(&self.cursors[idx]);

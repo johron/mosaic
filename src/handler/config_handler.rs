@@ -89,10 +89,10 @@ pub struct NormalModeShortcuts {
     pub enter_insert_mode: String,
     pub enter_command_mode: String,
 
-    pub move_left: String,
-    pub move_right: String,
-    pub move_up: String,
-    pub move_down: String,
+    pub cursor_left: String,
+    pub cursor_right: String,
+    pub cursor_up: String,
+    pub cursor_down: String,
 }
 
 impl Default for NormalModeShortcuts {
@@ -101,10 +101,10 @@ impl Default for NormalModeShortcuts {
             enter_insert_mode: String::from("i"),
             enter_command_mode: String::from("q"),
 
-            move_left: String::from("left | j"),
-            move_right: String::from("right | ø"),
-            move_up: String::from("up | k"),
-            move_down: String::from("down | l"),
+            cursor_left: String::from("left | j"),
+            cursor_right: String::from("right | ø"),
+            cursor_up: String::from("up | k"),
+            cursor_down: String::from("down | l"),
         }
     }
 }
@@ -126,10 +126,10 @@ impl Default for InsertModeConfig {
 pub struct InsertModeShortcuts {
     pub enter_normal_mode: String,
     
-    pub move_left: String,
-    pub move_right: String,
-    pub move_up: String,
-    pub move_down: String,
+    pub cursor_left: String,
+    pub cursor_right: String,
+    pub cursor_up: String,
+    pub cursor_down: String,
 
     pub skip_word_left: String,
     pub skip_word_right: String,
@@ -152,25 +152,25 @@ impl Default for InsertModeShortcuts {
         Self {
             enter_normal_mode: String::from("esc"),
             
-            move_left: String::from("left"),
-            move_right: String::from("right"),
-            move_up: String::from("up"),
-            move_down: String::from("down"),
+            cursor_left: String::from("left"),
+            cursor_right: String::from("right"),
+            cursor_up: String::from("up"),
+            cursor_down: String::from("down"),
 
-            skip_word_left: String::from("ctrl+left | ctrl+j"),
-            skip_word_right: String::from("ctrl+right | ctrl+ø"),
-            skip_paragraph_up: String::from("ctrl+up | ctrl+k"),
-            skip_paragraph_down: String::from("ctrl+down | ctrl+l"),
+            skip_word_left: String::from("control+left | control+j"),
+            skip_word_right: String::from("control+right | control+ø"),
+            skip_paragraph_up: String::from("control+up | control+k"),
+            skip_paragraph_down: String::from("control+down | control+l"),
 
-            scroll_up: String::from("ctrl+k | scroll_up"),
-            scroll_down: String::from("ctrl+l | scroll_down"),
-            //scroll_left: String::from("ctrl+h"),
-            //scroll_right: String::from("ctrl+ø"),
+            scroll_up: String::from("control+k | scroll_up"),
+            scroll_down: String::from("control+l | scroll_down"),
+            //scroll_left: String::from("control+h"),
+            //scroll_right: String::from("control+ø"),
             
             newline: String::from("enter"),
             backspace: String::from("backspace"),
             tab: String::from("tab"),
-            reverse_tab: String::from("shift+backtab")
+            reverse_tab: String::from("shift+tab")
         }
     }
 }
@@ -207,8 +207,8 @@ impl CommandModeShortcuts {
             move_left: String::from("left"),
             move_right: String::from("right"),
 
-            skip_word_left: String::from("ctrl+left | ctrl+j"),
-            skip_word_right: String::from("ctrl+right | ctrl+ø"),
+            skip_word_left: String::from("control+left | control+j"),
+            skip_word_right: String::from("control+right | control+ø"),
         }
     }
 }
