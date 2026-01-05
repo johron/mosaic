@@ -1,5 +1,5 @@
 use crate::{Command, Mode, Mosaic};
-use crossterm::event::{self, Event, KeyCode, KeyEvent};
+use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
 use std::io::Error;
 
 use std::time::{Duration};
@@ -54,7 +54,7 @@ impl InputHandler {
         Ok(events)
     }
 
-    fn process_key_events(mosaic: &mut Mosaic, keys: Vec<KeyEvent>) -> Result<String, String> { // TODO: Go back to old input system +-
+    fn process_key_events(mosaic: &mut Mosaic, keys: Vec<KeyEvent>) -> Result<String, String> {
         let mut pressed: Vec<String> = vec![];
 
         for key in keys.iter() {
@@ -118,7 +118,7 @@ impl InputHandler {
 
         match key_event.code {
             KeyCode::Char(c) => {
-                if key_event.modifiers.is_empty() {
+                if key_event.modifiers.is_empty() || key_event.modifiers.contains(KeyModifiers::SHIFT) {
                     editor.input(c)
                 }
             },
