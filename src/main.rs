@@ -123,13 +123,13 @@ impl Mosaic {
         );
         //self.panel_handler.set_current_panel(Some(String::from("editor_1")));
 
-        //self.panel_handler.add_panel(
-        //    Panel::new(String::from("editor_2"), PanelChild::Empty, Geometry::new(vec![TopRight]))
-        //);
-        //self.panel_handler.add_panel(
-        //    Panel::new(String::from("editor_3"), PanelChild::Editor(EditorPanel::new()), Geometry::new(vec![TopRight]))
-        //);
-        self.panel_handler.set_current_panel(Some(String::from("editor_1")));
+        self.panel_handler.add_panel(
+            Panel::new(String::from("editor_2"), PanelChild::Editor(EditorPanel::new()), Geometry::new(vec![TopRight]))
+        );
+        self.panel_handler.add_panel(
+            Panel::new(String::from("editor_3"), PanelChild::Editor(EditorPanel::new()), Geometry::new(vec![TopRight]))
+        );
+        self.panel_handler.set_current_panel(Some(String::from("editor_3")));
 
 
         self.config_handler.load_config();

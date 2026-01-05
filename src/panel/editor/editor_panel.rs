@@ -4,7 +4,7 @@ use ratatui::layout::{Constraint, Direction, Layout, Position, Rect};
 use ratatui::prelude::{Color, Line, Span};
 use ratatui::widgets::{Paragraph};
 use ratatui::Frame;
-use ratatui::style::Stylize;
+use ratatui::style::{Modifier, Style, Stylize};
 use ropey::Rope;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -55,7 +55,7 @@ impl EditorPanel {
             .split(size);
 
         let top_line = self.editor.top_line;
-        let height = chunks[0].height as usize - 1;
+        let height = std::cmp::max(1, chunks[0].height as usize - 1);
         //let height = size.height as usize - 1;
 
         self.editor.height = height;
@@ -68,8 +68,8 @@ impl EditorPanel {
         let lines_spans: Vec<Line> = self.highlight_line(top_line, max_line, self.editor.rope.clone());
 
         // Have to think about how I can to the multiple editor panels later, block should be set from outside, not in editor panel
-        let paragraph = Paragraph::new(lines_spans)
-            .bg(Color::Red);
+        let paragraph = Paragraph::new(lines_spans);
+            //.bg(Color::Red);
             //.block(block);
 
         frame.render_widget(paragraph, chunks[0]);
@@ -80,6 +80,19 @@ impl EditorPanel {
         //    let cursor_y = chunks[0].y + (cursor.line.saturating_sub(top_line)) as u16;
         //    frame.set_cursor_position(Position::new(cursor_x, cursor_y));
         //} // TODO: this doesnt work as crossterm only supports one cursor!
+
+        for cursor in &self.editor.cursors {
+            let x = chunks[0].x + 5 + cursor.col as u16; // 5 for gutter
+            let y = chunks[0].y + (cursor.line.saturating_sub(top_line)) as u16;
+            frame.render_widget(
+                Paragraph::new("▏")
+                    //.style(Style::default().add_modifier(Modifier::UNDERLINED)),
+                    .style(Style::default()
+                        .fg(Color::White)
+                        .bg(Color::Reset)),
+                Rect::new(x, y, 1, 1),
+            );
+        }
     }
 
     fn highlight_line(&mut self, top_line: usize, max_line: usize, rope: Rope) -> Vec<Line> {

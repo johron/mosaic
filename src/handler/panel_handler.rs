@@ -153,23 +153,24 @@ impl PanelHandler {
     }
 
     pub fn draw(&mut self, frame: &mut Frame, area: Rect) {
-        for panel in &mut self.children.clone() {
-            let index = self.children.iter().position(|elem| elem == panel).unwrap() as u16;
-            let len = self.children.len() as u16;
+        let len = self.children.len() as u16;
+        
+        for (index, panel) in self.children.iter_mut().enumerate() {
+            let index = index as u16;
 
             let rect = match self.direction {
                 Direction::Horizontal => {
                     Rect::new(area.x + area.width/len * index, area.y, area.width/len, area.height)
                 },
                 Direction::Vertical => {
-                    Rect::new(area.x, area.y +area.height/len * index, area.width, area.height/len)
+                    Rect::new(area.x, area.y + area.height/len * index, area.width, area.height/len)
                 }
             };
 
             //println!("{}{:?}", index, rect);
 
-            match &mut panel.child {
-                PanelChild::Editor(editor_panel) => {
+            match panel.child {
+                PanelChild::Editor(ref mut editor_panel) => {
                     editor_panel.draw(frame, rect);
                 }
                 _ => {}

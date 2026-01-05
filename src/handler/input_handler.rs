@@ -55,6 +55,19 @@ impl InputHandler {
     }
 
     fn process_key_events(mosaic: &mut Mosaic, keys: Vec<KeyEvent>) -> Result<String, String> {
+        // In Insert mode, handle regular character input directly without shortcut matching
+        if mosaic.state_handler.mode == Mode::Insert {
+            if let Some(first) = keys.first() {
+                // Check if this is a regular character without modifiers (except shift)
+                if let KeyCode::Char(_) = first.code {
+                    if first.modifiers.is_empty() || first.modifiers.contains(KeyModifiers::SHIFT) {
+                        // This is regular text input, handle it directly
+                        return Self::handle_input_mode(mosaic, *first);
+                    }
+                }
+            }
+        }
+
         let mut pressed: Vec<String> = vec![];
 
         for key in keys.iter() {
