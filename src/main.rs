@@ -176,9 +176,10 @@ fn main() -> io::Result<()> {
     let mut stdout = stdout.lock();
 
     enable_raw_mode()?;
-    crossterm::execute!(stdout, EnterAlternateScreen, EnableMouseCapture, PushKeyboardEnhancementFlags( // TODO: check if keyboard enhancements are supported
-        KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES
-    ))?;
+    //crossterm::execute!(stdout, EnterAlternateScreen, EnableMouseCapture, PushKeyboardEnhancementFlags( // TODO: check if keyboard enhancements are supported
+    //    KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES
+    //))?;
+    crossterm::execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
 
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
