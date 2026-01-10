@@ -102,7 +102,10 @@ impl PanelHandler {
             match panel.child {
                 PanelChild::Editor(ref mut editor_panel) => {
                     editor_panel.draw(frame, rect);
-                }
+                },
+                PanelChild::SubHandler(ref mut panel_handler) => {
+                    panel_handler.draw(frame, rect);
+                },
                 _ => {}
             }
         }
