@@ -1,3 +1,4 @@
+use ratatui::style::Modifier;
 use crate::handler::syntax_handler::SyntaxHandler;
 use crate::panel::editor::editor_logic::Editor;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
@@ -74,22 +75,16 @@ impl EditorPanel {
 
         frame.render_widget(paragraph, chunks[0]);
 
-        // render cursors
-        //for cursor in &self.editor.cursors {
-        //    let cursor_x = chunks[0].x + 5 + cursor.col as u16; // 5 for gutter
-        //    let cursor_y = chunks[0].y + (cursor.line.saturating_sub(top_line)) as u16;
-        //    frame.set_cursor_position(Position::new(cursor_x, cursor_y));
-        //} // TODO: this doesnt work as crossterm only supports one cursor!
+        let is_normal_mode = matches!(self.editor.normal_mode, true);
 
         for cursor in &self.editor.cursors {
             let x = chunks[0].x + 5 + cursor.col as u16; // 5 for gutter
             let y = chunks[0].y + (cursor.line.saturating_sub(top_line)) as u16;
             frame.render_widget(
-                Paragraph::new("▏")
-                    //.style(Style::default().add_modifier(Modifier::UNDERLINED)),
+                Paragraph::new("")
                     .style(Style::default()
-                        .fg(Color::White)
-                        .bg(Color::Reset)),
+                        .add_modifier(Modifier::REVERSED)
+                        .fg(if is_normal_mode { Color::White } else { Color::DarkGray })),
                 Rect::new(x, y, 1, 1),
             );
         }
