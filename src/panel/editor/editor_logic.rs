@@ -31,7 +31,7 @@ pub struct Editor {
     // view state
     pub(crate) top_line: usize,
     pub(crate) height: usize,
-    pub(crate) normal_mode: bool,
+    pub(crate) insert_inactive: bool,
     show_gutter: bool,
 
     file_path: Option<String>,
@@ -49,7 +49,7 @@ impl Editor {
             show_gutter: true,
             top_line: 0,
             height: 0,
-            normal_mode: true,
+            insert_inactive: true,
         }
     }
 

@@ -75,7 +75,7 @@ impl EditorPanel {
 
         frame.render_widget(paragraph, chunks[0]);
 
-        let is_normal_mode = matches!(self.editor.normal_mode, true);
+        let is_normal_mode = matches!(self.editor.insert_inactive, true);
 
         for cursor in &self.editor.cursors {
             let x = chunks[0].x + 5 + cursor.col as u16; // 5 for gutter

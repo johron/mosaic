@@ -40,20 +40,20 @@ pub fn register_shortcuts(shortcut_handler: &mut ShortcutHandler, config_handler
 
 fn enter_normal_mode(mosaic: &mut Mosaic) -> Result<String, String> {
     mosaic.state_handler.mode = Mode::Normal;
-    mosaic.panel_handler.get_current_editor_panel().unwrap().editor.normal_mode = true;
+    mosaic.panel_handler.get_current_editor_panel().unwrap().editor.insert_inactive = true;
     Ok(String::from("Entered normal mode"))
 }
 
 fn enter_insert_mode(mosaic: &mut Mosaic) -> Result<String, String> {
     mosaic.state_handler.mode = Mode::Insert;
-    mosaic.panel_handler.get_current_editor_panel().unwrap().editor.normal_mode = false;
+    mosaic.panel_handler.get_current_editor_panel().unwrap().editor.insert_inactive = false;
     Ok(String::from("Entered normal mode"))
 }
 
 fn enter_command_mode(mosaic: &mut Mosaic) -> Result<String, String> {
     mosaic.state_handler.command.result = None;
     mosaic.state_handler.mode = Mode::Command;
-    mosaic.panel_handler.get_current_editor_panel().unwrap().editor.normal_mode = false;
+    mosaic.panel_handler.get_current_editor_panel().unwrap().editor.insert_inactive = true;
     Ok(String::from("Entered command mode"))
 }
 
