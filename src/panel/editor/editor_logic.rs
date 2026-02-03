@@ -250,8 +250,8 @@ impl Editor {
     }
 
 
-    pub fn tab(&mut self) {
-        for _ in 0..4 {
+    pub fn tab(&mut self, n: usize) {
+        for _ in 0..n {
             self.input(' ');
         }
     }

@@ -136,7 +136,7 @@ impl Mos {
         self.panel_handler.set_current_panel(Some(String::from("editor_1")));
 
 
-        self.config_handler.load_config();
+        self.config_handler.load_config_safe();
         // Set state and editor config based on config ^
 
         self.register_commands();
@@ -164,7 +164,7 @@ impl Mos {
     }
     
     fn reload(&mut self) {
-        self.config_handler.load_config();
+        self.config_handler.load_config_safe();
     }
 }
 
@@ -183,7 +183,7 @@ fn main() -> io::Result<()> {
 
     let mut file_path: Option<String> = None;
     let mut initial_content = String::new();
-    
+
     if let Some(arg1) = env::args().nth(1) {
         file_path = Some(arg1.clone());
         match fs::read_to_string(&arg1) {

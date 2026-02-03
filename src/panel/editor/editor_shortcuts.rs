@@ -90,7 +90,8 @@ fn backspace(mos: &mut Mos) -> Result<String, String> {
 }
 
 fn tab(mos: &mut Mos) -> Result<String, String> {
-    mos.panel_handler.get_current_editor_panel().unwrap().editor.tab();
+    let tab_size = mos.config_handler.config.editor.tab_size;
+    mos.panel_handler.get_current_editor_panel().unwrap().editor.tab(tab_size);
     Ok(String::from("Tab"))
 }
 

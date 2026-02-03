@@ -1,12 +1,14 @@
-use std::io::Write;
+use std::fs;
+use std::path::PathBuf;
+use config::{Config, File};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
-pub struct Config {
+pub struct AppConfig {
     pub mos: MosConfig,
     pub editor: EditorConfig,
 }
 
-impl Default for Config {
+impl Default for AppConfig {
     fn default() -> Self {
         Self {
             mos: MosConfig::default(),
@@ -128,8 +130,6 @@ impl Default for InsertModeConfig {
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct InsertModeShortcuts {
-    //pub enter_normal_mode: String,
-    
     pub cursor_left: String,
     pub cursor_right: String,
     pub cursor_up: String,
@@ -200,8 +200,6 @@ impl Default for CommandModeConfig {
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct CommandModeShortcuts {
-    //pub enter_normal_mode: String,
-    
     pub move_left: String,
     pub move_right: String,
 
@@ -225,69 +223,79 @@ impl CommandModeShortcuts {
 
 #[derive(Debug, Clone)]
 pub(crate) struct ConfigHandler {
-    pub config: Config,
+    pub config: AppConfig,
 }
 
 impl ConfigHandler {
     pub fn new() -> Self {
         Self {
-            config: Config::default(),
+            config: AppConfig::default(),
         }
     }
 
-    pub fn load_config(&mut self) {
-        let path = std::path::Path::new("./config/mos_config.toml");
+    fn config_path(&mut self) -> PathBuf {
+        let mut path = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
+        path.push("mos");
+        path.push("config.toml");
+        path
+    }
 
-        // ensure config directory exists
+    fn backup_path(&mut self) -> PathBuf {
+        let mut path = self.config_path();
+        path.set_extension("last_ok.toml");
+        path
+    }
+
+    pub fn load_config_safe(&mut self) {
+        let path = self.config_path();
+        let backup = self.backup_path();
+
+        if !path.exists() {
+            self.write_default_config(&path);
+            self.config = AppConfig::default();
+        }
+
+        match self.try_load(&path) {
+            Ok(cfg) => {
+                if let Ok(toml) = toml::to_string_pretty(&cfg) {
+                    let _ = fs::write(&backup, toml);
+                }
+                self.config = cfg
+            }
+
+            Err(err) => {
+                eprintln!("Config error: {err}");
+
+                if backup.exists() {
+                    if let Ok(cfg) = self.try_load(&backup) {
+                        eprintln!("Using last known good config");
+                        self.config = cfg;
+                    }
+                }
+
+                eprintln!("Falling back to defaults");
+                self.config = AppConfig::default()
+            }
+        }
+    }
+
+    fn try_load(&mut self, path: &PathBuf) -> Result<AppConfig, config::ConfigError> {
+        Config::builder()
+            .add_source(File::from(path.as_path()))
+            .build()?
+            .try_deserialize()
+    }
+
+
+    fn write_default_config(&mut self, path: &PathBuf) {
         if let Some(parent) = path.parent() {
-            if !parent.exists() {
-                if let Err(e) = std::fs::create_dir_all(parent) {
-                    eprintln!("Failed to create config directory `{}`: {}", parent.display(), e);
-                    return;
-                }
-            }
+            let _ = fs::create_dir_all(parent);
         }
 
-        // helper to write the default config to disk
-        fn write_default(path: &std::path::Path, cfg: &Config) -> Result<(), std::io::Error> {
-            let toml_str = toml::to_string_pretty(cfg).unwrap_or_else(|e| {
-                eprintln!("Failed to serialize default config: {}", e);
-                String::new()
-            });
-            let mut file = std::fs::File::create(path)?;
-            file.write_all(toml_str.as_bytes())?;
-            Ok(())
-        }
+        let default = AppConfig::default();
 
-        if path.exists() {
-            match std::fs::read_to_string(path) {
-                Ok(contents) => match toml::from_str::<Config>(&contents) {
-                    Ok(parsed) => {
-                        self.config = parsed;
-                    }
-                    Err(e) => {
-                        eprintln!("Failed to parse config `{}`: {}. Rewriting default config.", path.display(), e);
-                        if let Err(e) = write_default(path, &self.config) {
-                            eprintln!("Failed to write default config to `{}`: {}", path.display(), e);
-                        }
-                    }
-                },
-                Err(e) => {
-                    eprintln!("Failed to read config `{}`: {}. Rewriting default config.", path.display(), e);
-                    if let Err(e) = write_default(path, &self.config) {
-                        eprintln!("Failed to write default config to `{}`: {}", path.display(), e);
-                    }
-                }
-            }
-        } else {
-            // file doesn't exist: write default config
-            if let Err(e) = write_default(path, &self.config) {
-                eprintln!("Failed to create config `{}`: {}", path.display(), e);
-            }
+        if let Ok(toml) = toml::to_string_pretty(&default) {
+            let _ = fs::write(path, toml);
         }
-    }
-
-    pub fn reload(&mut self) {
-        self.load_config();
     }
 }

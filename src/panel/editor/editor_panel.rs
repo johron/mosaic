@@ -1,4 +1,4 @@
-use crate::handler::syntax_handler::SyntaxHandler;
+use crate::panel::editor::editor_syntax::{load_syntax_index, syntax_for_extension, SyntaxIndexConfig};
 use crate::panel::editor::editor_logic::Editor;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::prelude::{Color, Line, Span};
@@ -11,45 +11,18 @@ use ropey::Rope;
 #[derive(Clone, Debug, PartialEq)]
 pub struct EditorPanel {
     pub editor: Editor,
-    pub syntax_handler: SyntaxHandler
+    pub syntax_index: SyntaxIndexConfig
 }
 
 impl EditorPanel {
     pub fn new() -> Self {
-        let mut syntax_handler = SyntaxHandler::new();
-        syntax_handler.load_syntaxes();
-
         Self {
             editor: Editor::new(None, None),
-            syntax_handler,
+            syntax_index: load_syntax_index(),
         }
     }
     
     pub fn draw(&mut self, frame: &mut Frame, size: Rect) {//, state_handler: &mut StateHandler) {
-        /*let block = match state_handler.mode {
-            Mode::Normal => {
-                if state_handler.command.result.is_some() {
-                    Block::new()
-                        .title_bottom(format!("{}", state_handler.command.result.as_ref().unwrap()))
-                        .title_alignment(Alignment::Left)
-                } else {
-                    Block::new()
-                        .title_bottom(format!("{}", state_handler.mode))
-                        .title_alignment(Alignment::Right)
-                }
-            },
-            Mode::Insert => {
-                Block::new()
-            },
-            Mode::Command => {
-                Block::new()
-                    .title_bottom(format!("/{}", state_handler.command.content))
-            },
-        };*/
-        
-        //let size = frame.area();
-        //let size = Rect::new(0, 0, 75, 30);
-        //:?}", size);
         let chunks = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([Constraint::Percentage(100)].as_ref())
@@ -91,27 +64,36 @@ impl EditorPanel {
     }
 
     fn highlight_line(&mut self, top_line: usize, max_line: usize, rope: Rope) -> Vec<Line> {
-        if let Some(syntax) = self.syntax_handler.get_syntax_by_extension(self.editor.get_file_extension().unwrap_or(String::from("")).as_str()) {
-            syntax.highlight(
-                top_line,
-                max_line,
-                &rope,
-            )
-        } else {
-            let mut lines_spans: Vec<Line> = Vec::new();
+        let extension = self.editor.get_file_extension();
 
-            for i in top_line..max_line {
-                let rope_line = self.editor.rope.line(i);
-                let text_line = rope_line.to_string();
-                // convert text_line to spans, do not highlight for now
-                let spans = vec![Span::raw(text_line)];
-                let mut line_spans = vec![Span::styled(format!("{:4} ", i), ratatui::style::Style::default().fg(Color::Gray))]; // small gutter
-
-                line_spans.extend(spans);
-                lines_spans.push(Line::from(line_spans));
+        if let Some(extension) = extension {
+            if let Some(syntax) = syntax_for_extension(extension.as_str(), &self.syntax_index) {
+                syntax.highlight(
+                    top_line,
+                    max_line,
+                    &rope,
+                )
+            } else {
+                Self::no_highlight_line(top_line, max_line, rope)
             }
-
-            lines_spans
+        } else {
+            Self::no_highlight_line(top_line, max_line, rope)
         }
+    }
+
+    fn no_highlight_line(top_line: usize, max_line: usize, rope: Rope) -> Vec<Line<'static>> {
+        let mut lines_spans: Vec<Line> = Vec::new();
+
+        for i in top_line..max_line {
+            let rope_line = rope.line(i);
+            let text_line = rope_line.to_string();
+            let spans = vec![Span::raw(text_line)];
+            let mut line_spans = vec![Span::styled(format!("{:4} ", i), Style::default().fg(Color::Gray))]; // small gutter
+
+            line_spans.extend(spans);
+            lines_spans.push(Line::from(line_spans));
+        }
+
+        lines_spans
     }
 }
