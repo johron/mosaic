@@ -2,7 +2,7 @@ use crate::panel::editor::editor_logic::Editor;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::prelude::{Color, Line, Span};
 use ratatui::style::Modifier;
-use ratatui::style::{Style, Stylize};
+use ratatui::style::{Style};
 use ratatui::widgets::Paragraph;
 use ratatui::Frame;
 use ropey::Rope;
