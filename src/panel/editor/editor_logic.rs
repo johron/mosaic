@@ -1,3 +1,4 @@
+use crate::panel::editor::editor_syntax::{load_syntax_index, syntax_for_extension, SyntaxConfig, SyntaxIndexConfig};
 use ropey::Rope;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Ord, PartialOrd)]
@@ -35,6 +36,9 @@ pub struct Editor {
     show_gutter: bool,
 
     file_path: Option<String>,
+
+    pub syntax_index: SyntaxIndexConfig,
+    pub syntax: Option<SyntaxConfig>
 }
 
 impl Editor {
@@ -50,6 +54,9 @@ impl Editor {
             top_line: 0,
             height: 0,
             insert_inactive: true,
+
+            syntax_index: load_syntax_index(),
+            syntax: None,
         }
     }
 
@@ -59,6 +66,7 @@ impl Editor {
             self.file_path = Some(file_path.to_string());
             self.cursors = vec![Cursor { line: 0, col: 0, goal_col: 0 }];
             self.top_line = 0;
+            self.syntax = syntax_for_extension(&*self.get_file_extension().unwrap(), &self.syntax_index);
         }
     }
 

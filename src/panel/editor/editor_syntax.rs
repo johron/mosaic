@@ -1,15 +1,25 @@
-use std::fs;
-use std::path::PathBuf;
 use ratatui::prelude::{Line, Span};
+use ratatui::style::{Color, Style};
 use ropey::Rope;
 use serde::{Deserialize, Serialize};
-use ratatui::style::{Color, Style};
+use std::fs;
+use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct SyntaxConfig {
     pub keywords: Vec<String>,
     pub comment_delimiters: Vec<(String, String)>,
     pub string_delimiters: Vec<(String, String)>,
+}
+
+impl SyntaxConfig {
+    pub fn default() -> Self {
+        Self {
+            keywords: vec![],
+            comment_delimiters: vec![("//".to_string(), "\n".to_string())],
+            string_delimiters: vec![("\"".to_string(), "\"".to_string()), ("'".to_string(), "'".to_string())],
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default)]

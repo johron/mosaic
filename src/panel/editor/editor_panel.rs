@@ -1,4 +1,3 @@
-use crate::panel::editor::editor_syntax::{load_syntax_index, syntax_for_extension, SyntaxIndexConfig};
 use crate::panel::editor::editor_logic::Editor;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::prelude::{Color, Line, Span};
@@ -11,14 +10,12 @@ use ropey::Rope;
 #[derive(Clone, Debug, PartialEq)]
 pub struct EditorPanel {
     pub editor: Editor,
-    pub syntax_index: SyntaxIndexConfig
 }
 
 impl EditorPanel {
     pub fn new() -> Self {
         Self {
             editor: Editor::new(None, None),
-            syntax_index: load_syntax_index(),
         }
     }
     
@@ -64,18 +61,12 @@ impl EditorPanel {
     }
 
     fn highlight_line(&mut self, top_line: usize, max_line: usize, rope: Rope) -> Vec<Line> {
-        let extension = self.editor.get_file_extension();
-
-        if let Some(extension) = extension {
-            if let Some(syntax) = syntax_for_extension(extension.as_str(), &self.syntax_index) {
-                syntax.highlight(
-                    top_line,
-                    max_line,
-                    &rope,
-                )
-            } else {
-                Self::no_highlight_line(top_line, max_line, rope)
-            }
+        if let Some(syntax) = &self.editor.syntax {
+            syntax.highlight(
+                top_line,
+                max_line,
+                &rope,
+            )
         } else {
             Self::no_highlight_line(top_line, max_line, rope)
         }

@@ -8,9 +8,10 @@ use crate::handler::input_handler::InputHandler;
 use crate::handler::panel_handler::{Panel, PanelChild, PanelHandler};
 use crate::handler::shortcut_handler::ShortcutHandler;
 use crate::handler::state_handler::StateHandler;
+use crate::panel::command::command_panel::FloatingCommandPanel;
 use crate::panel::editor::editor_panel::EditorPanel;
 use crate::panel::editor::editor_shortcuts;
-use crossterm::event::{DisableMouseCapture, EnableMouseCapture, KeyboardEnhancementFlags, PushKeyboardEnhancementFlags};
+use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen};
 use ratatui::backend::CrosstermBackend;
 use ratatui::layout::{Direction, Rect};
@@ -20,7 +21,6 @@ use std::io::StdoutLock;
 use std::ops::AddAssign;
 use std::time::{Duration, Instant};
 use std::{env, fmt, fs, io};
-use crate::panel::command::command_panel::FloatingCommandPanel;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum Mode {
@@ -122,6 +122,10 @@ impl Mos {
     }
 
     fn init(&mut self) {
+        //let _ = crossterm::execute!(io::stdout(), PushKeyboardEnhancementFlags(
+        //    KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES
+        //));
+
         self.panel_handler.add_panel(
             Panel::new(String::from("editor_1"), PanelChild::Editor(EditorPanel::new()))
         );
@@ -173,10 +177,10 @@ fn main() -> io::Result<()> {
     let mut stdout = stdout.lock();
 
     enable_raw_mode()?;
-    crossterm::execute!(stdout, EnterAlternateScreen, EnableMouseCapture, PushKeyboardEnhancementFlags( // TODO: check if keyboard enhancements are supported
-        KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES
-    ))?;
-    //crossterm::execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    //crossterm::execute!(stdout, EnterAlternateScreen, EnableMouseCapture, PushKeyboardEnhancementFlags( // TODO: check if keyboard enhancements are supported
+    //    KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES
+    //))?;
+    crossterm::execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
 
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
@@ -209,7 +213,7 @@ fn main() -> io::Result<()> {
     crossterm::execute!(
         terminal.backend_mut(),
         LeaveAlternateScreen,
-        DisableMouseCapture
+        DisableMouseCapture,
     )?;
     terminal.show_cursor()?;
 

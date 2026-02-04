@@ -1,10 +1,9 @@
-use ratatui::Frame;
+use crate::handler::state_handler::StateHandler;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::style::{Color, Style};
 use ratatui::text::Line;
 use ratatui::widgets::{Block, Borders, Paragraph};
-use crate::Command;
-use crate::handler::state_handler::StateHandler;
+use ratatui::Frame;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct FloatingCommandPanel {}
