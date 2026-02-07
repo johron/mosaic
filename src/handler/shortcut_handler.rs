@@ -4,7 +4,7 @@ use crate::Mos;
 pub struct Shortcut {
     pub name: String,
     pub input: String,
-    pub handler: fn(&mut Mos) -> Result<String, String>,
+    pub handler: fn(&mut Mos) -> Result<String, String>, // burde sikkert ligge til noe current_panel: Option<String (panel id)>
 }
 
 #[derive(Debug, Clone)]

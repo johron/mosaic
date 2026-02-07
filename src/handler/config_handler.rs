@@ -2,7 +2,7 @@ use config::{Config, File};
 use std::fs;
 use std::path::PathBuf;
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct AppConfig {
     pub mos: MosConfig,
     pub editor: EditorConfig,
@@ -17,7 +17,7 @@ impl Default for AppConfig {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct MosConfig {
     pub auto_save: bool,
     pub save_interval: usize,
@@ -34,7 +34,7 @@ impl Default for MosConfig {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct MosShortcuts {
     pub mos_key: String,
     pub mos_key_as_mod: String,
@@ -61,7 +61,7 @@ impl Default for MosShortcuts {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct EditorConfig {
     pub show_gutter: bool,
     pub tab_size: usize,
@@ -88,7 +88,7 @@ impl Default for EditorConfig {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, PartialEq)]
 #[derive(Clone)]
 pub struct EditorShortcuts {
     pub clear_cursors: String,
@@ -102,7 +102,7 @@ impl Default for EditorShortcuts {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct NormalModeConfig {
     pub highlight_current_line: bool,
     pub shortcuts: NormalModeShortcuts,
@@ -117,7 +117,7 @@ impl Default for NormalModeConfig {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct NormalModeShortcuts {
     pub enter_insert_mode: String,
     pub enter_command_mode: String,
@@ -142,7 +142,7 @@ impl Default for NormalModeShortcuts {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct InsertModeConfig {
     pub shortcuts: InsertModeShortcuts,
 }
@@ -155,7 +155,7 @@ impl Default for InsertModeConfig {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct InsertModeShortcuts {
     pub cursor_left: String,
     pub cursor_right: String,
@@ -212,7 +212,7 @@ impl Default for InsertModeShortcuts {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct CommandModeConfig {
     pub shortcuts: CommandModeShortcuts,
 }
@@ -225,7 +225,7 @@ impl Default for CommandModeConfig {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone, PartialEq)]
 pub struct CommandModeShortcuts {
     pub move_left: String,
     pub move_right: String,
