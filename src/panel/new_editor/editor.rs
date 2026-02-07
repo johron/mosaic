@@ -2,19 +2,26 @@ use ropey::Rope;
 use crate::handler::config_handler::AppConfig;
 use crate::handler::panel_handler::{Panel, PanelData, PanelKind};
 use crate::Mode;
-use crate::panel::editor::editor_logic::Cursor;
 use crate::panel::new_editor::editor_draw::draw_editor_panel;
+use crate::panel::new_editor::editor_event::handle_editor_event;
 
 pub struct Editor {
     pub rope: Rope,
     pub scroll_offset: usize,
-    pub cursors: Vec<Cursor>, // for multiple cursors
+    pub cursors: Vec<Cursor>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Ord, PartialOrd)]
+pub struct Cursor {
+    pub line: usize,
+    pub col: usize,
+    pub goal_col: usize,
 }
 
 pub fn new_editor_panel(config: AppConfig) -> Panel {
     Panel::new(
         PanelKind::Editor,
-        String::from("unnamed"),
+        String::from("unnamed"), // TODO: set title to file name
         PanelData::Editor {
             rope: Rope::new(),
             top_line: 0,
@@ -25,18 +32,4 @@ pub fn new_editor_panel(config: AppConfig) -> Panel {
         draw_editor_panel,
         handle_editor_event,
     )
-}
-
-fn handle_editor_event(panel: &mut Panel, event: &str, args: Vec<String>) -> Result<(), String> {
-    match event {
-        "input" => {
-            // Handle key press events for the editor
-            println!("Editor received input: {:?}", args);
-            Ok(())
-        },
-        "move_cursor"  => {
-            Ok(())
-        }
-        _ => Err(format!("Unhandled event: {}", event)),
-    }
 }

@@ -138,9 +138,12 @@ impl InputHandler {
         pressed.sort();
         pressed.dedup();
 
-        for shortcut in mos.shortcut_handler.get_shortcuts() {
-            let mode = format!("mode.{}", mos.state_handler.mode.clone().to_string().to_lowercase());
+        println!("{:?}", pressed);
 
+        let shortcuts = mos.shortcut_handler.get_shortcuts().clone();
+        let mode = format!("mode.{}", mos.state_handler.mode.clone().to_string().to_lowercase());
+
+        for shortcut in shortcuts {
             if shortcut.name.starts_with(mode.as_str()) || !shortcut.name.starts_with("mode.") {
                 let mut input: Vec<String> = shortcut.input.split('|').map(String::from).collect();
                 input.sort();
@@ -150,7 +153,8 @@ impl InputHandler {
                     split.sort();
 
                     if split == pressed {
-                        return (shortcut.handler)(mos);
+                        let _ = (shortcut.handler)(mos);
+                        return Ok(format!("Executed shortcut: {}", shortcut.name));
                     }
                 }
             }

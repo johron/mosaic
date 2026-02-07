@@ -1,10 +1,10 @@
+use std::collections::HashMap;
 use ratatui::Frame;
-use ratatui::layout::Rect;
+use ratatui::layout::{Direction, Rect};
 use uuid::Uuid;
 use crate::handler::config_handler::AppConfig;
 use crate::Mode;
-use crate::panel::editor::editor_logic::Cursor;
-use crate::panel::editor::editor_syntax::{SyntaxConfig, SyntaxIndexConfig};
+use crate::panel::new_editor::editor::Cursor;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PanelKind {
@@ -28,10 +28,10 @@ pub enum PanelData {
         history_index: Option<usize>,
     },
     Split {
-        panels: Vec<String>, // IDs of child panels
+        panels: Vec<String>, // IDs of child panels, I'll need helper functions to figure out where in the chain this panel id is and stuff. and also for knowing which panel is active and should be colored as so
     },
     Plugin {
-        data: std::collections::HashMap<String, String>,
+        data: HashMap<String, String>, // Når jeg får Lua støtten implementert kan jeg muligens bruke noe LuaValue her, vet ikke?
     },
     Empty,
 }
@@ -94,6 +94,7 @@ impl Panel {
 #[derive(Debug, Clone)]
 pub struct PanelHandler {
     pub panels: Vec<Panel>,
+    pub direction: Direction,
     pub active_panel: Option<String>,
 }
 
@@ -101,13 +102,36 @@ impl PanelHandler {
     pub fn new() -> Self {
         Self {
             panels: Vec::new(),
+            direction: Direction::Horizontal,
             active_panel: None,
         }
     }
 
     pub fn draw_panels(&mut self, frame: &mut Frame, area: Rect) {
-        for panel in self.panels.iter_mut() {
-            (panel.draw)(panel, frame, area);
+        let len = self.panels.len() as u16;
+
+        for (index, panel) in self.panels.iter_mut().enumerate() {
+            let index = index as u16;
+
+            let rect = match self.direction {
+                Direction::Horizontal => {
+                    Rect::new(area.x + area.width/len * index, area.y, area.width/len, area.height)
+                },
+                Direction::Vertical => {
+                    Rect::new(area.x, area.y + area.height/len * index, area.width, area.height/len)
+                }
+            };
+
+            //println!("{}{:?}", index, rect);
+
+            match panel.kind {
+                PanelKind::Editor | PanelKind::Command | PanelKind::Plugin(_, _) => {
+                    (panel.draw)(panel, frame, rect);
+                },
+                PanelKind::Split(_) => {
+                    todo!("Implement split panel drawing");
+                }
+            }
         }
     }
 
@@ -124,7 +148,20 @@ impl PanelHandler {
 
     pub fn remove_panel(&mut self, id: &str) -> Result<(), String> {
         if let Some(pos) = self.panels.iter().position(|p| p.id == id) {
+            // if the panel being removed is the active panel, set active_panel to the next panel in the list, or None if there are no more panels
+            if let Some(active_id) = &self.active_panel {
+                if active_id == id {
+                    if self.panels.len() > 1 {
+                        let next_pos = if pos == self.panels.len() - 1 { 0 } else { pos + 1 };
+                        self.set_active_panel(Some(self.panels[next_pos].id.clone()))
+                    } else {
+                        self.set_active_panel(None)
+                    }
+                }
+            }
+
             self.panels.remove(pos);
+
             Ok(())
         } else {
             Err(format!("Panel with id {} not found", id))
@@ -140,6 +177,14 @@ impl PanelHandler {
             }
         } else {
             self.active_panel = None;
+        }
+
+        self.iter_set_active();
+    }
+
+    pub fn iter_set_active(&mut self) {
+        for panel in self.panels.iter_mut() {
+            panel.active = Some(panel.id.clone()) == self.active_panel;
         }
     }
 
