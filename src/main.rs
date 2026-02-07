@@ -119,10 +119,10 @@ impl Mos {
     //        editor_panel.editor.open_file(file_path);
     //    }
     //}
-    
+
     // burde heller være noe slik: fn open_file() som da lager en ny editor for å åpne filen,
     // også en funksjon som bare lager en ny tom editor, hvis ingen fil skal åpnes
-    
+
     fn new_empty_editor(&mut self) {
         let editor = new_editor_panel(self.config_handler.config.clone());
         let res = self.panel_handler.add_panel(editor);
@@ -136,7 +136,7 @@ impl Mos {
 
     fn show_toast(&mut self, message: &str, duration: Duration) {
         println!("{}", message);
-        
+
         //let toast = Toast {
         //    message: message.to_string(),
         //    start_time: Instant::now(),
@@ -148,7 +148,7 @@ impl Mos {
 
     fn init(&mut self) {
         self.new_empty_editor();
-        
+
         //self.panel_handler.add_panel(
         //    OldPanel::new(String::from("editor_1"), OldPanelChild::Editor(EditorPanel::new()))
         //);
@@ -270,7 +270,7 @@ fn main() -> io::Result<()> {
 
     let mut mos = Mos::new();
     mos.init();
-
+    mos.state_handler.mode = Mode::Normal;
     //if let Some(path) = file_path.as_ref() {
     //    mos.open_in_current_editor(path);
     //}

@@ -3,6 +3,8 @@ use ratatui::layout::Rect;
 use uuid::Uuid;
 use crate::handler::config_handler::AppConfig;
 use crate::Mode;
+use crate::panel::editor::editor_logic::Cursor;
+use crate::panel::editor::editor_syntax::{SyntaxConfig, SyntaxIndexConfig};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PanelKind {
@@ -13,23 +15,47 @@ pub enum PanelKind {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum PanelData {
+    Editor {
+        rope: ropey::Rope,
+        top_line: usize,
+        cursors: Vec<Cursor>,
+    },
+    Command {
+        content: String,
+        result: Option<String>,
+        history: Vec<String>,
+        history_index: Option<usize>,
+    },
+    Split {
+        panels: Vec<String>, // IDs of child panels
+    },
+    Plugin {
+        data: std::collections::HashMap<String, String>,
+    },
+    Empty,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Panel {
     pub kind: PanelKind,
     pub title: String,
     pub active: bool,
+    pub data: PanelData,
 
     id: String,
     config: AppConfig,
     mode: Mode,
 
     pub draw: fn(&mut Panel, frame: &mut Frame, area: Rect),
-    pub call_event: fn(&mut Panel, event: &str, args: Vec<String>) -> Result<(), String>,
+    pub event: fn(&mut Panel, event: &str, args: Vec<String>) -> Result<(), String>,
 }
 
 impl Panel {
     pub fn new(
         kind: PanelKind,
         title: String,
+        data: PanelData,
         config: AppConfig,
         mode: Mode,
         draw: fn(&mut Panel, frame: &mut Frame, area: Rect),
@@ -39,11 +65,12 @@ impl Panel {
             kind,
             title,
             active: false,
+            data,
             id: Uuid::new_v4().to_string(),
             config,
             mode,
             draw,
-            call_event: event,
+            event: event,
         }
     }
 
@@ -54,11 +81,11 @@ impl Panel {
     pub fn set_config(&mut self, config: AppConfig) {
         self.config = config;
     }
-    
+
     pub fn get_id(&self) -> String {
         self.id.clone()
     }
-    
+
     pub fn get_config(&self) -> &AppConfig {
         &self.config
     }
@@ -77,7 +104,7 @@ impl PanelHandler {
             active_panel: None,
         }
     }
-    
+
     pub fn draw_panels(&mut self, frame: &mut Frame, area: Rect) {
         for panel in self.panels.iter_mut() {
             (panel.draw)(panel, frame, area);
@@ -115,7 +142,7 @@ impl PanelHandler {
             self.active_panel = None;
         }
     }
-    
+
     pub fn get_active_panel(&self) -> Option<&Panel> {
         if let Some(id) = &self.active_panel {
             self.panels.iter().find(|p| p.id == *id)
@@ -123,7 +150,7 @@ impl PanelHandler {
             None
         }
     }
-    
+
     pub fn get_active_panel_mut(&mut self) -> Option<&mut Panel> {
         if let Some(id) = &self.active_panel {
             self.panels.iter_mut().find(|p| p.id == *id)

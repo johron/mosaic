@@ -1,25 +1,30 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
-use ratatui::widgets::Paragraph;
+use ropey::Rope;
 use crate::handler::config_handler::AppConfig;
-use crate::handler::panel_handler::{Panel, PanelKind};
+use crate::handler::panel_handler::{Panel, PanelData, PanelKind};
 use crate::Mode;
+use crate::panel::editor::editor_logic::Cursor;
+use crate::panel::new_editor::editor_draw::draw_editor_panel;
+
+pub struct Editor {
+    pub rope: Rope,
+    pub scroll_offset: usize,
+    pub cursors: Vec<Cursor>, // for multiple cursors
+}
 
 pub fn new_editor_panel(config: AppConfig) -> Panel {
     Panel::new(
         PanelKind::Editor,
-        "unnamed".to_string(),
+        String::from("unnamed"),
+        PanelData::Editor {
+            rope: Rope::new(),
+            top_line: 0,
+            cursors: vec![Cursor { line: 0, col: 0, goal_col: 0 }],
+        },
         config,
         Mode::Normal,
         draw_editor_panel,
         handle_editor_event,
     )
-}
-
-fn draw_editor_panel(panel: &mut Panel, frame: &mut Frame, area: Rect) {
-    // draw some simple placeholder text
-    let paragraph = Paragraph::new("Editor Panel - Content goes here");
-    frame.render_widget(paragraph, area);
 }
 
 fn handle_editor_event(panel: &mut Panel, event: &str, args: Vec<String>) -> Result<(), String> {

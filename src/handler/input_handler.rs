@@ -187,23 +187,23 @@ impl InputHandler {
 //
     //    Ok(String::from("Inputted"))
     //}
-    
+
     fn handle_input_mode(&mut self, mos: &mut Mos, key_event: KeyEvent) -> Result<String, String> {
         let panel = mos.panel_handler.get_active_panel_mut();
         if panel.is_none() {
             return Err(String::from("No active panel"));
         }
-        
+
         let panel = panel.unwrap();
         if panel.kind != PanelKind::Editor {
             return Err(String::from("Active panel is not an editor"));
         }
-        
+
         match key_event.code {
             KeyCode::Char(c) => {
                 if key_event.modifiers.is_empty() || key_event.modifiers.contains(KeyModifiers::SHIFT) {
                     // Call the editor's input event with the character
-                    let res = (panel.call_event)(panel, "input", vec![c.to_string()]);
+                    let res = (panel.event)(panel, "input", vec![c.to_string()]);
                     res.map(|_| String::from("Inputted character"))
                 } else {
                     Ok(String::from("Modifier keys are not supported in Insert mode"))
@@ -213,8 +213,8 @@ impl InputHandler {
                 Ok(String::from("Unmapped input"))
             }
         }
-        
-        
+
+
     }
 
     fn handle_command_mode(mos: &mut Mos, key: KeyEvent) -> Result<String, String> {
