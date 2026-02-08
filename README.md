@@ -20,8 +20,11 @@
 - [ ] Refactor command system
 - [ ] Remove old code
 - [ ] Syntax entries should have fallback with writing when no syntax is found
+- [ ] Syntax entries/indexes should be placed in main config
+- [ ] Replace current syntax system with one managed within lua, using lua plugins
+    - [ ] Mos builtin plugin
 - [ ] Pop KeyboardEnhancements correctly on exit
-- [ ] Mos key shortcuts should not be in editorconfig, but mosconfig, dette gjelder andre ting også
+- [x] Mos key shortcuts should not be in editorconfig, but mosconfig, dette gjelder andre ting også
 
 ## InDev images
 <img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/b8df7e28-06f2-4a5e-9c75-69d6ddf3a28e" />
