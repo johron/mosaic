@@ -25,6 +25,7 @@
     - [ ] Mos builtin plugin
 - [ ] Pop KeyboardEnhancements correctly on exit
 - [x] Mos key shortcuts should not be in editorconfig, but mosconfig, dette gjelder andre ting også
+- [ ] While trying to refactor stuff and putting Mode in editor, not global, i realized i have several design flaws, mode should not be mentioned outside of editor, like it currently is in the input handler, need to revisit my idea of catch all and stuff, since i use this for putting input in insert mode. I need to modularize more.
 
 ## InDev images
 <img width="1919" height="1018" alt="image" src="https://github.com/user-attachments/assets/b8df7e28-06f2-4a5e-9c75-69d6ddf3a28e" />

@@ -6,7 +6,7 @@ use crate::handler::command_handler::CommandHandler;
 use crate::handler::config_handler::ConfigHandler;
 use crate::handler::input_handler::InputHandler;
 use crate::handler::shortcut_handler::ShortcutHandler;
-use crate::handler::state_handler::StateHandler;
+use crate::handler::state_handler::{State, StateHandler};
 use crate::panel::command::command_panel::FloatingCommandPanel;
 
 #[cfg(not(windows))]
@@ -30,27 +30,7 @@ use crate::handler::panel_handler::PanelHandler;
 use crate::panel::new_editor::editor::new_editor_panel;
 use global::shortcuts::register_global_shortcuts;
 use crate::global::commands::register_global_commands;
-
-#[derive(Debug, Copy, Clone, PartialEq)]
-enum Mode {
-    Normal,
-    Insert,
-    Command,
-    // Terminal
-    // Select
-    // Search & Replace
-    // Explorer/Files
-}
-
-impl Display for Mode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match self {
-            Self::Normal  => write!(f, "NORMAL"),
-            Self::Insert  => write!(f, "INSERT"),
-            Self::Command => write!(f, "COMMAND"),
-        }
-    }
-}
+use crate::panel::new_editor::editor_shortcuts;
 
 #[derive(Debug, Clone)]
 struct Command {
@@ -161,9 +141,13 @@ impl Mos {
         // Set state and editor config based on config ^
 
         register_global_commands(&mut self.command_handler);
-        register_global_shortcuts(&mut self.shortcut_handler, &mut self.config_handler);
 
         //self.editor.register_shortcuts(&mut self.shortcut_handler, &mut self.config_handler);
+    }
+    
+    fn register_shortcuts(&mut self) {
+        register_global_shortcuts(&mut self.shortcut_handler, &mut self.config_handler);
+        editor_shortcuts::register_editor_shortcuts(&mut self.shortcut_handler, &mut self.config_handler);
     }
     
     fn reload(&mut self) {
@@ -205,7 +189,6 @@ fn main() -> io::Result<()> {
 
     let mut mos = Mos::new();
     mos.init();
-    mos.state_handler.mode = Mode::Normal;
     //if let Some(path) = file_path.as_ref() {
     //    mos.open_in_current_editor(path);
     //}
@@ -242,7 +225,7 @@ fn run(terminal: &mut Terminal<CrosstermBackend<StdoutLock>>, mut mos: Mos) -> i
             let area = frame.area();
             mos.panel_handler.draw_panels(frame, area);
 
-            if mos.state_handler.mode == Mode::Command || mos.state_handler.mode == Mode::Normal {
+            if mos.state_handler.state == State::Command || mos.state_handler.state == State::Panel {
                 let height = 2;
                 FloatingCommandPanel::draw(frame, Rect::new(0, area.height - height, area.width, height), &mos.state_handler);
             }

@@ -4,6 +4,7 @@ use ratatui::prelude::{Color, Line, Modifier, Span, Style};
 use ratatui::widgets::Paragraph;
 use ropey::Rope;
 use crate::handler::panel_handler::{Panel, PanelData, PanelKind};
+use crate::panel::new_editor::editor::EditorData;
 
 pub fn draw_editor_panel(panel: &mut Panel, frame: &mut Frame, area: Rect) {
     if panel.kind != PanelKind::Editor {
@@ -11,11 +12,12 @@ pub fn draw_editor_panel(panel: &mut Panel, frame: &mut Frame, area: Rect) {
     }
 
     let mut data = match &panel.data {
-        PanelData::Editor { rope, top_line, cursors } => {
-            crate::panel::new_editor::editor::Editor {
+        PanelData::Editor { rope, top_line, cursors, mode } => {
+            EditorData {
                 rope: rope.clone(),
                 scroll_offset: *top_line,
                 cursors: cursors.clone(),
+                mode: mode.clone(),
             }
         },
         _ => return,
@@ -58,6 +60,7 @@ pub fn draw_editor_panel(panel: &mut Panel, frame: &mut Frame, area: Rect) {
         rope: data.rope,
         top_line: data.scroll_offset,
         cursors: data.cursors,
+        mode: data.mode,
     };
 }
 
