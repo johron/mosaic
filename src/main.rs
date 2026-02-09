@@ -3,6 +3,7 @@ mod panel;
 mod workspace;
 mod floating_panel;
 mod panel_builtin;
+mod input;
 
 use std::io::stdout;
 use std::time::Duration;
@@ -11,26 +12,40 @@ use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 use crate::app::Mos;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Terminal setup
-    crossterm::terminal::enable_raw_mode()?;
+fn main() -> Result<(), String> {
+    if crossterm::terminal::enable_raw_mode().is_err() {
+        return Err("Failed to enable raw mode".to_string());
+    }
+    
     let backend = CrosstermBackend::new(stdout());
-    let mut terminal = Terminal::new(backend)?;
+    let mut terminal = if let Ok(term) = Terminal::new(backend) {;
+        term
+    } else {
+        crossterm::terminal::disable_raw_mode().ok();
+        return Err("Failed to initialize terminal".to_string());
+    };
 
-    let mut app = Mos::new();
+    let mut mos = Mos::new();
 
     loop {
-        while event::poll(Duration::from_millis(0))? {
-            let ev = event::read()?;
-            app.handle_terminal_event(ev);
+        if mos.should_quit {
+            break;
+        }
+        
+        while event::poll(Duration::from_millis(0)).map_err(|e| format!("Failed to poll events: {}", e))? {
+            let ev = event::read().map_err(|e| format!("Failed to read event: {}", e))?;
+            mos.handle_terminal_event(ev);
         }
 
-        app.update();
+        mos.update();
 
         terminal.draw(|frame| {
-            app.render(frame);
-        })?;
+            mos.render(frame);
+        }).map_err(|e| format!("Failed to draw terminal: {}", e))?;
 
         //  std::thread::sleep(Duration::from_millis(16));
     }
+
+    crossterm::terminal::disable_raw_mode().ok();
+    Ok(())
 }

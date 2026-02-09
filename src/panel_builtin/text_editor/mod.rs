@@ -1,1 +1,1 @@
-mod text_editor;
+pub mod text_editor;

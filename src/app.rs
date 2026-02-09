@@ -2,12 +2,14 @@ use crossterm::event::Event;
 use ratatui::Frame;
 
 pub struct Mos {
-    
+    pub should_quit: bool,
 }
 
 impl Mos {
     pub fn new() -> Self {
-        Mos {}
+        Mos {
+            should_quit: false,
+        }
     }
 
     pub fn update(&mut self) {
@@ -18,7 +20,7 @@ impl Mos {
         // Handle terminal events here
     }
 
-    pub fn render(&mut self, _frame: &mut Frame) { 
+    pub fn render(&mut self, _frame: &mut Frame) {
         // Render UI here
     }
 }
