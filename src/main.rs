@@ -2,12 +2,13 @@ mod app;
 mod panel;
 mod workspace;
 mod floating_panel;
-mod panel_builtin;
-mod input;
+mod plugin_builtin;
+mod event;
+mod plugin;
+mod system;
 
 use std::io::stdout;
 use std::time::Duration;
-use crossterm::event;
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 use crate::app::Mos;
@@ -32,8 +33,8 @@ fn main() -> Result<(), String> {
             break;
         }
         
-        while event::poll(Duration::from_millis(0)).map_err(|e| format!("Failed to poll events: {}", e))? {
-            let ev = event::read().map_err(|e| format!("Failed to read event: {}", e))?;
+        while crossterm::event::poll(Duration::from_millis(0)).map_err(|e| format!("Failed to poll events: {}", e))? {
+            let ev = crossterm::event::read().map_err(|e| format!("Failed to read event: {}", e))?;
             mos.handle_terminal_event(ev);
         }
 
