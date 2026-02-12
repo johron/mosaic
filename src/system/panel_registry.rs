@@ -13,7 +13,7 @@ impl PanelRegistry {
         }
     }
 
-    pub fn register_panel(&mut self, plugin_id: MosId, panel_id: MosId, panel_ctor: PanelCtor) {
+    pub fn register_panel_kind(&mut self, plugin_id: MosId, panel_id: MosId, panel_ctor: PanelCtor) {
         self.panels.insert(panel_id, (plugin_id, panel_ctor));
     }
     
