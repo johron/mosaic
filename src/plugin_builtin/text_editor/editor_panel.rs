@@ -30,6 +30,7 @@ pub struct EditorPanel {
 impl EditorPanel {
     pub fn new() -> Self {
         Self {
+            panels: Vec::new(),
             rope: Rope::new(),
             cursors: vec![Cursor::new(0, 0, 0)],
             file_path: None,

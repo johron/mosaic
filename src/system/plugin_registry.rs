@@ -26,7 +26,7 @@ impl PluginRegistry {
         for plugin in &mut self.plugins {
             let registration = plugin.enable();
             for panel in registration.panel_kinds {
-                panel_registry.register_panel(plugin.id(), panel);
+                panel_registry.register_panel(plugin.id(), panel.0, panel.1);
             }
         }
     }

@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 use crate::app::MosId;
+use crate::panel::panel::PanelCtor;
 
 pub struct PanelRegistry {
-    panels: HashMap<MosId, MosId>, // (plugin_id, panel_id)
+    panels: HashMap<MosId, (MosId, PanelCtor)>, // (plugin_id, panel_id, panel_ctor)
 }
 
 impl PanelRegistry {
@@ -12,15 +13,15 @@ impl PanelRegistry {
         }
     }
 
-    pub fn register_panel(&mut self, plugin_id: MosId, panel_id: MosId) {
-        self.panels.insert(panel_id, plugin_id);
+    pub fn register_panel(&mut self, plugin_id: MosId, panel_id: MosId, panel_ctor: PanelCtor) {
+        self.panels.insert(panel_id, (plugin_id, panel_ctor));
     }
     
     pub fn unregister_panels_by_plugin(&mut self, plugin_id: &MosId) {
-        self.panels.retain(|_, p_id| p_id != plugin_id);
+        self.panels.retain(|_, (p_id, _)| p_id != plugin_id);
     }
     
-    pub fn get_panels(&self) -> &HashMap<MosId, MosId> {
+    pub fn get_panels(&self) -> &HashMap<MosId, (MosId, PanelCtor)> {
         &self.panels
     }
     

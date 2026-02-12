@@ -4,6 +4,8 @@ use uuid::Uuid;
 use crate::app::MosId;
 use crate::event::event::Event;
 
+pub type PanelCtor = fn() -> Box<dyn Panel>;
+
 pub trait Panel {
     fn id(&self) -> MosId;
     fn title(&self) -> &str;

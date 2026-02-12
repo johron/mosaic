@@ -1,11 +1,14 @@
+use crate::app::MosId;
+use crate::panel::panel::PanelCtor;
 use crate::plugin::plugin::{Plugin, PluginRegistration};
 use crate::plugin_builtin::text_editor::editor_panel::EditorPanel;
 
-pub struct TextEditorPlugin {}
+pub struct TextEditorPlugin {
+    pub panel_kinds: Vec<MosId>,
+}
 
 impl TextEditorPlugin {
     pub fn new() -> Self {
-        Self {}
     }
 }
 
@@ -23,8 +26,10 @@ impl Plugin for TextEditorPlugin {
     }
 
     fn enable(&mut self) -> PluginRegistration {
+        let panel_id = MosId::new();
+        self.panel_kinds.push(panel_id.clone());
         PluginRegistration {
-            panels: vec![EditorPanel::new()],
+            panel_kinds: vec![(panel_id, PanelCtor::try_from(EditorPanel)],
         }
     }
 
@@ -35,4 +40,5 @@ impl Plugin for TextEditorPlugin {
     fn handle_event(&mut self, _event: crate::event::event::Event) -> Result<(), String> {
         Ok(())
     }
+
 }
