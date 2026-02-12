@@ -1,14 +1,13 @@
 use crate::app::MosId;
-use crate::panel::panel::PanelCtor;
 use crate::plugin::plugin::{Plugin, PluginRegistration};
-use crate::plugin_builtin::text_editor::editor_panel::EditorPanel;
+use crate::plugin_builtin::mos_editor::editor_panel::EditorPanel;
 use crate::system::panel_registry::PanelRegistry;
 
-pub struct TextEditorPlugin {
+pub struct MosEditorPlugin {
     pub id: MosId,
 }
 
-impl TextEditorPlugin {
+impl MosEditorPlugin {
     pub fn new() -> Self {
         Self {
             id: MosId::new(),
@@ -16,13 +15,13 @@ impl TextEditorPlugin {
     }
 }
 
-impl Plugin for TextEditorPlugin {
+impl Plugin for MosEditorPlugin {
     fn id(&self) -> MosId {
         self.id
     }
-    
+
     fn name(&self) -> &str {
-        "Text Editor"
+        "MosEditor"
     }
 
     fn version(&self) -> &str {
@@ -34,11 +33,10 @@ impl Plugin for TextEditorPlugin {
     }
 
     fn enable(&mut self, panel_registry: &mut PanelRegistry) -> Result<(), String> {
-        let panel_id = MosId::new();
-        panel_registry.register_panel(self.id(), panel_id, || Box::new(EditorPanel::new()));
-        
-        println!("Enabled Text Editor Plugin with panel id: {:?}", panel_id);
-        
+        println!("(built-in) [{}] Enabled with plugin-id {:?}", self.name(), self.id());
+
+        panel_registry.register_panel(self.id(), MosId::new(), || Box::new(EditorPanel::new()));
+
         Ok(())
     }
 

@@ -1,4 +1,4 @@
-use crate::app::MosId;
+use crate::app::{Mos, MosId};
 
 pub enum Axis {
     Horizontal,
@@ -11,8 +11,8 @@ pub enum Layout {
         //ratio: f32,
         children: Vec<Layout>,
     },
-    Tabs{
+    Tabs {
         tabs: Vec<MosId>,
-        active: usize,
+        active: MosId,
     },
 }

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use crate::app::MosId;
-use crate::panel::panel::PanelCtor;
+use crate::panel::panel::{Panel, PanelCtor};
 
 pub struct PanelRegistry {
     panels: HashMap<MosId, (MosId, PanelCtor)>, // (plugin_id, panel_id, panel_ctor)
@@ -31,4 +31,8 @@ impl PanelRegistry {
             .map(|(panel_id, _)| *panel_id)
             .collect()
     } // need some way of instantiating the panel from id, maybe in plugin registry
+
+    pub fn new_panel_instance(&self, panel_id: &MosId) -> Option<Box<dyn Panel>> {
+        self.panels.get(panel_id).map(|(_, panel_ctor)| panel_ctor())
+    }
 }

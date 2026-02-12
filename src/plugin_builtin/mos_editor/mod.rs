@@ -1,2 +1,2 @@
-pub mod text_editor;
+pub mod mos_editor;
 pub mod editor_panel;
