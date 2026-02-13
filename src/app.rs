@@ -36,12 +36,9 @@ impl Mos {
 
         let text_editor_kind_id = panel_registry.get_panels_by_plugin(&plugin_registry.get_plugins()[0].id()).first().cloned();
         if let Some(kind_id) = text_editor_kind_id {
-            println!("Registered Text Editor Plugin with kind id: {:?}", kind_id);
-
             let panel_instance = panel_registry.new_panel_instance(&kind_id);
             if let Some(panel) = panel_instance {
                 workspace.add_panel(panel);
-                println!("Successfully created an instance of the Text Editor panel");
             } else {
                 eprintln!("Failed to create an instance of the Text Editor panel");
             }

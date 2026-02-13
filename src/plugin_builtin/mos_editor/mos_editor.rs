@@ -33,7 +33,7 @@ impl Plugin for MosEditorPlugin {
     }
 
     fn enable(&mut self, panel_registry: &mut PanelRegistry) -> Result<(), String> {
-        println!("(built-in) [{}] Enabled with plugin-id {:?}", self.name(), self.id());
+        //println!("(built-in) [{}] Enabled with plugin-id {:?}", self.name(), self.id()); -> go to log instead of screen
 
         panel_registry.register_panel_kind(self.id(), MosId::new(), || Box::new(EditorPanel::new()));
 

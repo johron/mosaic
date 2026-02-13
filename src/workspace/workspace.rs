@@ -26,8 +26,6 @@ impl Workspace {
                 let panel_id = panel.id();
                 tabs.push(panel);
                 *active = panel_id; // Set the newly added panel as active
-                println!("Added panel with id: {:?}", panel_id);
-                println!("{:?}", tabs.len());
             }
             _ => {
                 eprintln!("Currently only Tabs layout is supported for adding panels");
@@ -36,6 +34,8 @@ impl Workspace {
     }
 
     pub fn render(&self, frame: &mut Frame) {
+        // chunks?
+
         let area = frame.size();
         self.layout.render(frame, area);
     }

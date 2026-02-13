@@ -41,9 +41,15 @@ impl Layout {
                 }
             }
             Layout::Tabs { tabs, active } => {
-                println!("Rendering Tabs layout with {} tabs, active tab id: {:?}", tabs.len(), active);
-                if let Some(active_panel) = tabs.iter().find(|p| p.id() == *active) {
+                //println!("Rendering Tabs layout with {} tabs, active tab id: {:?}", tabs.len(), active);
+                if let Some(active_panel) = tabs.iter().find(|panel| panel.id() == *active) {
                     active_panel.render(frame, area);
+                } else if !tabs.is_empty() {
+                    // If active panel is not found, render the first tab as fallback
+                    tabs[0].render(frame, area);
+                } else {
+                    // No tabs to render, maybe render a placeholder or do nothing
+                    println!("No tabs to render in Tabs layout");
                 }
             }
         }
