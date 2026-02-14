@@ -10,10 +10,10 @@ pub struct PluginRegistration {
 }
 
 pub trait Plugin {
-    fn id(&self) -> MosId;
-    fn name(&self) -> &str;
-    fn version(&self) -> &str;
-    fn description(&self) -> &str;
+    fn id(&self) -> String;
+    fn name(&self) -> String;
+    fn version(&self) -> String;
+    fn description(&self) -> String;
     // fn dependencies(&self) -> Vec<PrettyMosKind>;
 
     // fn is_backend()

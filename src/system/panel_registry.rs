@@ -3,7 +3,7 @@ use crate::panel::panel::{Panel, PanelCtor};
 use std::collections::HashMap;
 
 pub struct PanelRegistry {
-    panels: HashMap<MosId, (MosId, PanelCtor)>, // (plugin_id, panel_id, panel_ctor)
+    panels: HashMap<String, (String, PanelCtor)>, // (plugin_id, panel_id, panel_ctor)
 }
 
 impl PanelRegistry {
@@ -13,30 +13,30 @@ impl PanelRegistry {
         }
     }
 
-    pub fn register_panel_kind(&mut self, plugin_id: MosId, panel_id: MosId, panel_ctor: PanelCtor) {
-        self.panels.insert(panel_id, (plugin_id, panel_ctor));
+    pub fn register_panel_kind(&mut self, plugin_id: String, panel_id: String, panel_ctor: PanelCtor) {
+        self.panels.insert(panel_id.to_string(), (plugin_id.to_string(), panel_ctor));
     }
     
-    pub fn unregister_panels_by_plugin(&mut self, plugin_id: &MosId) {
-        self.panels.retain(|_, (p_id, _)| p_id != plugin_id);
+    pub fn unregister_panels_by_plugin(&mut self, plugin_id: String) {
+        self.panels.retain(|_, (p_id, _)| *p_id != plugin_id);
     }
     
-    pub fn get_panels(&self) -> &HashMap<MosId, (MosId, PanelCtor)> {
+    pub fn get_panels(&self) -> &HashMap<String, (String, PanelCtor)> {
         &self.panels
     }
     
-    pub fn get_panel(&self, panel_id: &MosId) -> Option<&(MosId, PanelCtor)> {
+    pub fn get_panel(&self, panel_id: &str) -> Option<&(String, PanelCtor)> {
         self.panels.get(panel_id)
     }
     
-    pub fn get_panels_by_plugin(&self, plugin_id: &MosId) -> Vec<MosId> {
+    pub fn get_panels_by_plugin(&self, plugin_id: &str) -> Vec<String> {
         self.panels.iter()
             .filter(|(_, (p_id, _))| p_id == plugin_id)
-            .map(|(panel_id, _)| *panel_id)
+            .map(|(panel_id, _)| panel_id.to_string())
             .collect()
     } // need some way of instantiating the panel from id, maybe in plugin registry
 
-    pub fn new_panel_instance(&self, panel_id: &MosId) -> Option<Box<dyn Panel>> {
-        self.panels.get(panel_id).map(|(_, panel_ctor)| panel_ctor())
+    pub fn new_panel_instance(&self, panel_id: String) -> Option<Box<dyn Panel>> {
+        self.panels.get(&panel_id).map(|(_, panel_ctor)| panel_ctor())
     }
 }

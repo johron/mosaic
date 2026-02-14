@@ -6,6 +6,7 @@ use crate::system::plugin_registry::PluginRegistry;
 use crate::workspace::workspace::Workspace;
 use ratatui::Frame;
 use uuid::Uuid;
+use crate::system::lua_manager::LuaManager;
 
 #[derive(Eq, Hash, PartialEq, Copy, Clone, Debug)]
 pub struct MosId(Uuid);
@@ -30,12 +31,18 @@ pub struct Mos {
     pub workspaces: Vec<Workspace>,
     pub panel_registry: PanelRegistry,
     pub plugin_registry: PluginRegistry,
+    pub lua_manager: LuaManager,
 }
 
 impl Mos {
     pub fn new() -> Self {
         let mut plugin_registry = PluginRegistry::new();
         let mut panel_registry = PanelRegistry::new();
+        let mut lua_manager = LuaManager::new();
+
+        lua_manager.init().unwrap();
+        lua_manager.load_plugin("test.lua").unwrap();
+
         let mut workspace = Workspace::new();
 
         // Register built-in plugins here, **temporary code**
@@ -45,7 +52,7 @@ impl Mos {
 
         let text_editor_kind_id = panel_registry.get_panels_by_plugin(&plugin_registry.get_plugins()[0].id()).first().cloned();
         if let Some(kind_id) = text_editor_kind_id {
-            let panel_instance = panel_registry.new_panel_instance(&kind_id);
+            let panel_instance = panel_registry.new_panel_instance(kind_id);
             if let Some(panel) = panel_instance {
                 workspace.add_panel(panel);
             } else {
@@ -62,6 +69,7 @@ impl Mos {
             workspaces: vec![workspace],
             panel_registry,
             plugin_registry,
+            lua_manager
         }
     }
 
